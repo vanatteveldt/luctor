@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% load bootstrap %}
+
+{% block content %}
+
+<form method="post" action="#">
+    {% csrf_token %}
+    {{ lform|bootstrap }}
+    <input type="submit" value="Submit" />
+</form>
+
+{% endblock %}
