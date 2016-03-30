@@ -6,3 +6,5 @@ class Lesson(models.Model):
     raw_text = models.TextField(null=True)
     status = models.IntegerField(default=0)
     problems = models.TextField(null=True)
+    title = models.CharField(max_length=255, null=True)
+    date = models.DateField(null=True)
