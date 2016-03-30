@@ -3,11 +3,10 @@
 *.pyc
 local_settings.py
 
-data
-
 # Emacs meuk 
 *~
 \#*\#
 .\#*
 
 
+env
