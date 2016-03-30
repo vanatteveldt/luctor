@@ -41,7 +41,7 @@ def upload(request):
             lesson = lform.save(commit=False)
             lesson.docfile = dest
             lesson.save()
-            print ">>>", os.path.basename(lesson.docfile)
+            print( ">>>", os.path.basename(lesson.docfile))
             return 
 
         # is het een valide uploadform?
@@ -71,7 +71,7 @@ def antiword(f):
 def parse_file(f):
     fname, txt = antiword(f)
     lines = txt.split("\n")
-    print lines
+    print(lines)
     header = [l for l in lines if l.strip()][0]
     m = re.match(r"(.*?) {2,}(\d.*)$", header)
     if m:

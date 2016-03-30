@@ -153,7 +153,7 @@ def read_date(string, lax=False, rejectPre1970=False, american=False):
 
         if not time: time = (0, 0, 0)
         return datetime.datetime(*(date + time))
-    except Exception, e:
+    except Exception as e:
         import traceback
 
         trace = traceback.format_exc()
