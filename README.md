@@ -1,19 +1,41 @@
-luctor
-======
-Title
-========================================================
+Kooklessen
+===
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring web pages (click the **MD** toolbar button for help on Markdown).
+Installation
+---
 
-When you click the **Knit HTML** button a web page will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like those?
-
-```{r}
-summary(cars)
+```{sh}
+git clone https://github.com/vanatteveldt/luctor
+cd luctor
+virtualenv --python=python3 env
+. env/bin/activate
+python manage.py
 ```
 
-You can also embed plots, for example:
+Setting up the data(base)
+---
 
-```{r fig.width=7, fig.height=6}
-plot(cars)
+If you have a database already, simply unpack it into the `/data` folder and you're done
+
+If not, you will need to create the initial database, load in the files, and reindex:
+
+```{sh}
+python manage.py migrate
+python 0_addfiles.py /link/to/folder
+python 1_rawtext.py
+python 2_title.py
+python manage.py rebuild_index
 ```
 
+You probably also need to create a first superuser:
+
+```{sh}
+python manage.py createsuperuser
+```
+
+Running the server
+---
+
+```{sh}
+python manage.py runserver
+```
