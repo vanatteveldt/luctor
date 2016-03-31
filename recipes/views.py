@@ -11,7 +11,7 @@ from haystack.forms import HighlightedSearchForm
 from haystack.utils import Highlighter
 from django.utils.html import strip_tags
         
-class SearchView(SearchView):
+class SearchView(LoginRequiredMixin, SearchView):
     """My custom search view."""
 
     form_class = HighlightedSearchForm
@@ -36,7 +36,7 @@ class FullTextHighlighter(Highlighter):
         highlight_locations = self.find_highlightable_words()
         return self.render_html(highlight_locations, 0, len(text_block))
                 
-class LessonView(DetailView):
+class LessonView(LoginRequiredMixin, DetailView):
 
     model = Lesson
 
