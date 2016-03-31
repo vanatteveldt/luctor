@@ -1,84 +1,52 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-from django import forms
-from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+from django.views.generic.detail import DetailView
 
 from recipes.models import Lesson
 
-import tempfile
-import subprocess
-import os
-import re
-from recipes import readdate
-from django.core.files import File
+from haystack.generic_views import SearchView
+from haystack.forms import HighlightedSearchForm
 
-def index(request):
-    pietje = "bla"
-    return render(request, "index.html", locals())
+from haystack.utils import Highlighter
+from django.utils.html import strip_tags
+        
+class SearchView(SearchView):
+    """My custom search view."""
 
-
-class UploadForm(forms.Form):
-    file = forms.FileField()
-
-class LessonForm(forms.ModelForm):
-    filename = forms.CharField(widget=forms.HiddenInput())
+    form_class = HighlightedSearchForm
     
-    class Meta:
-        model = Lesson
-        exclude = ["docfile"]
-         
-def upload(request):
-    if request.method == 'POST':
-        # is het een valide lessonform?
-        lform = LessonForm(request.POST)
-        if lform.is_valid():
-            # copy tempfile naar media root
-            fn = lform.cleaned_data["filename"]
-            dest = os.path.join(settings.MEDIA_ROOT, os.path.basename(fn))
-            os.rename(fn, dest)
-            
-            # lesson aanmaken!
-            lesson = lform.save(commit=False)
-            lesson.docfile = dest
-            lesson.save()
-            print( ">>>", os.path.basename(lesson.docfile))
-            return 
+    def get_queryset(self):
+        queryset = super(SearchView, self).get_queryset()
+        # further filter queryset based on some set of criteria
+        return queryset
 
-        # is het een valide uploadform?
-        form = UploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            filename, title, date, text = parse_file(form.cleaned_data['file'])
+    def get_context_data(self, *args, **kwargs):
+        context = super(SearchView, self).get_context_data(*args, **kwargs)
+        print( "!", context)
+        # do something
+        print(dir(context['paginator']))
+        return context
+        
 
-            lform = LessonForm(dict(filename = filename, title = title, date=date, text=text))
-            lform.is_valid()
-            
-            return render(request, "upload_check.html", locals())
-    else:
-        form = UploadForm()
-    return render(request, "upload.html", locals())
+class FullTextHighlighter(Highlighter):
+    max_length = 20000000
+    def highlight(self, text_block):
+        self.text_block = strip_tags(text_block)
+        highlight_locations = self.find_highlightable_words()
+        return self.render_html(highlight_locations, 0, len(text_block))
+                
+class LessonView(DetailView):
 
-def antiword(f):
-    # assume f is in memory uplaoded
-    tmpd = tempfile.mkdtemp()
-    tmpf = os.path.join(tmpd, f.name)
-    open(tmpf, 'wb').write(f.read())
-    try:
-        return tmpf, subprocess.check_output(["antiword", tmpf])
-    except:
-        text = subprocess.check_output(["unoconv", "--import=utf8",  "--format=text", "--stdout", tmpf])
-        return tmpf, text
+    model = Lesson
 
-def parse_file(f):
-    fname, txt = antiword(f)
-    lines = txt.split("\n")
-    print(lines)
-    header = [l for l in lines if l.strip()][0]
-    m = re.match(r"(.*?) {2,}(\d.*)$", header)
-    if m:
-        title, dates = m.groups() 
-        date = readdate.read_date(dates)
-    else:
-        title, date = header, None
-    
-
-    return fname, title, date, txt
+    def get_context_data(self, **kwargs):
+        context = super(LessonView, self).get_context_data(**kwargs)
+        highlight = self.request.GET.get('highlight')
+        text = context['object'].raw_text
+        if highlight:
+            hl = FullTextHighlighter(highlight)
+            text = hl.highlight(text)
+                
+        context.update(**locals())
+        return context

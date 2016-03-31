@@ -1,9 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from recipes import views
 
-urlpatterns = patterns('',
-                       url(r'^$', views.index, name='index'),
-                       url(r'^upload$', views.upload, name='upload'),
-
-)
+urlpatterns = [
+    url(r'^$', views.SearchView.as_view(), name='search'),
+    url(r'^les/(?P<pk>[-\w]+)/$', views.LessonView.as_view(), name='lesson-detail'),
+]

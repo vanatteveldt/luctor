@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{ object.title }}</h1>
+<p>Date: {{ object.date }} | File: <a href="{{ object.docfile.url }}">{{ object.filename  }}</a></p>
+<div class="raw">
+{{ text| safe }}
+</div>
+
+{% endblock %}

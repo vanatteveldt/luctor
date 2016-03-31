@@ -16,7 +16,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # for production, should move uploads somewhere suitable for serving
 DATA_DIR = os.path.join(BASE_DIR, "data")
 MEDIA_ROOT = os.path.join(DATA_DIR, "upload")
-
+MEDIA_URL = "/media/"
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
@@ -26,10 +26,33 @@ SECRET_KEY = '-z$%!6hq(wt@4r%l3qp7!5fl776*-mk_qi43m%(c=x&m6$c=(h'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            # insert your TEMPLATE_DIRS here
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                # Insert your TEMPLATE_CONTEXT_PROCESSORS here or use this
+                # list if you haven't customized them:
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
 
 ALLOWED_HOSTS = []
 
+LOGIN_URL = "login"
 
 # Application definition
 
@@ -41,6 +64,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bootstrapform',
+    'haystack',
     'recipes',
 )
 
@@ -58,6 +82,12 @@ ROOT_URLCONF = 'luctor.urls'
 
 WSGI_APPLICATION = 'luctor.wsgi.application'
 
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(DATA_DIR, 'whoosh_index'),
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases

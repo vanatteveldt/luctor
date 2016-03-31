@@ -9,7 +9,7 @@ import os
 
 
 def get_text(fn):
-    cmd = ["antiword", "-f", fn]
+    cmd = ["antiword", "-w", "0", "-f", fn]
     error = []
     p = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     out, err = p.communicate()
@@ -20,7 +20,7 @@ def get_text(fn):
     error.append("antiword: {err}".format(err=err.decode("latin-1")))
     
     if b'Rich Text Format' in err:
-        cmd = ['/usr/bin/python3', '/usr/bin/unoconv', '-f', 'text', '--stdout', fn] 
+        cmd = ['/usr/bin/python3', '/usr/bin/unoconv', '-f', 'text', '-e', 'FilterOptions=UTF8,LF', '--stdout', fn] 
         #cmd = ['unrtf', '--text', fn]
         p = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         out, err = p.communicate()
@@ -47,7 +47,7 @@ def get_text(fn):
                      
             
 
-for l in Lesson.objects.filter(status=1):
+for l in Lesson.objects.filter(status=0):
     fn = l.docfile.file.file.name
     print(l.id, fn)
 

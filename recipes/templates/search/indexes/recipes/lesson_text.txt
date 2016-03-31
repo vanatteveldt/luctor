@@ -1,0 +1,3 @@
+{{ object.filename }}
+{{ object.title }}
+{{ object.raw_text }}
