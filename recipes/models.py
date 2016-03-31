@@ -12,6 +12,6 @@ class Lesson(models.Model):
 
     class Meta:
         ordering = ['date']
-        
+
     def get_absolute_url(self):
         return reverse('lesson-detail', args=[str(self.id)])

@@ -1,9 +1,12 @@
 {% extends "base.html" %}
-
+{% load admin_urls %}
 {% block content %}
 
 <h1>{{ object.title }}</h1>
-<p>Date: {{ object.date }} | File: <a href="{{ object.docfile.url }}">{{ object.filename  }}</a></p>
+<p>Date: {{ object.date }} | File: <a href="{{ object.docfile.url }}">{{ object.filename  }}</a>
+
+{% if user.is_superuser %}| <a href="{% url 'admin:recipes_lesson_change' object.id %}">Aanpassen</a> {% endif %}
+</p>
 <div class="raw">
 {{ text| safe }}
 </div>
