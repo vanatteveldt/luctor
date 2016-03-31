@@ -9,6 +9,7 @@ git clone https://github.com/vanatteveldt/luctor
 cd luctor
 virtualenv --python=python3 env
 . env/bin/activate
+pip install -r requirements.txt
 python manage.py
 ```
 
