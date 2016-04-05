@@ -4,7 +4,7 @@ django.setup()
 
 #######################################################
 from recipes.models import Lesson
-import re
+import re, csv, sys
 
 RE_MEASURE = r'[0-9¼½]|gram|\bg\b|\bmg\b|liter|deciliter|\bdl\b|\bl\b|\bcl\b|\bgrote\b|\bkleine\b|\btheel\b|\beetl'
 STOP = "van","een","het","met","door","tot","deel","minuten","rasp","voor","fijn","volle","laten","naar","delen","oven","eelt","niet","zoals","heel","erbij","heet","alle","blok",'schillen', 'dunne', 'reepjes','klein', 'beetje', 'koken'
@@ -40,9 +40,11 @@ for l in Lesson.objects.all():
                 if len(i)> 3 and i.islower() and i not in STOP:
                     ingcount[i] = ingcount.get(i,0) + 1
 
-ingredients = set()
+w = csv.writer(sys.stdout)
+w.writerow(["ingredient", "count"])
 for i, n in sorted(ingcount.items(), key=lambda x:x[1]):
     if n >= 5:
-        ingredients.add(i)
+        w.writerow([i, str(n)])
+
         
             

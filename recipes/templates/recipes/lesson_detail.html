@@ -7,8 +7,26 @@
 
 {% if user.is_superuser %}| <a href="{% url 'admin:recipes_lesson_change' object.id %}">Aanpassen</a> {% endif %}
 </p>
+
+<ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#parsed" aria-controls="home" role="tab" data-toggle="tab">Parsed</a></li>
+    <li role="presentation"><a href="#raw" aria-controls="profile" role="tab" data-toggle="tab">Raw</a></li>
+  </ul>
+<div>
+ <div class="tab-content">
+
+    <div role="tabpanel" class="tab-pane active" id="parsed">
+<div class="parsed">
+{{ parsed_html|safe }}
+</div>
+</div>
+
+    <div role="tabpanel" class="tab-pane" id="raw">
 <div class="raw">
 {{ text| safe }}
 </div>
+</div>
+</div>
+  </div>
 
 {% endblock %}

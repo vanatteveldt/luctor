@@ -43,10 +43,20 @@ class LessonView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(LessonView, self).get_context_data(**kwargs)
         highlight = self.request.GET.get('highlight')
-        text = context['object'].raw_text
+        les = context['object']
+        text = les.raw_text
         if highlight:
             hl = FullTextHighlighter(highlight)
             text = hl.highlight(text)
-                
+        if les.parsed:
+            import markdown2
+            p = les.parsed
+            if highlight:
+                hl = FullTextHighlighter(highlight)
+            
+                p = hl.highlight(p)
+                        
+            parsed_html = markdown2.markdown(p, extras=["tables"])
+        
         context.update(**locals())
         return context
