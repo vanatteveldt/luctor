@@ -53,7 +53,7 @@ for l in Lesson.objects.filter(status=2):
     success, msg = get_text(fn)
 
     if success:
-        #l.status = 1
+        l.status = 1
         l.raw_text = msg
         l.problems = ""
     else:

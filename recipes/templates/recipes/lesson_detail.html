@@ -3,30 +3,47 @@
 {% block content %}
 
 <h1>{{ object.title }}</h1>
-<p>Date: {{ object.date }} | File: <a href="{{ object.docfile.url }}">{{ object.filename  }}</a>
+<p>  Status: {{status_name}} |
+  Date: {{ object.date }} | File: <a href="{{ object.docfile.url }}">{{ object.filename  }}</a>
 
-{% if user.is_superuser %}| <a href="{% url 'admin:recipes_lesson_change' object.id %}">Aanpassen</a> {% endif %}
+  {% if user.is_superuser %}| <a href="{% url 'admin:recipes_lesson_change' object.id %}">Aanpassen</a> {% endif %}
+  {% if user.is_superuser and object.status == 3 %}| <a href="{% url 'recipes:lesson-detail' object.id %}?check=4">Goedkeuren</a> {% endif %}
 </p>
 
 <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#parsed" aria-controls="home" role="tab" data-toggle="tab">Parsed</a></li>
-    <li role="presentation"><a href="#raw" aria-controls="profile" role="tab" data-toggle="tab">Raw</a></li>
-  </ul>
+  <li role="presentation" class="active"><a href="#parsed" aria-controls="home" role="tab" data-toggle="tab">Parsed</a></li>
+  <li role="presentation"><a href="#raw" aria-controls="profile" role="tab" data-toggle="tab">Raw</a></li>
+  <li role="presentation"><a href="#original" aria-controls="profile" role="tab" data-toggle="tab">Original</a></li>
+
+</ul>
 <div>
- <div class="tab-content">
+  <div class="tab-content">
 
     <div role="tabpanel" class="tab-pane active" id="parsed">
-<div class="parsed">
+      <div class="parsed">
 {{ parsed_html|safe }}
-</div>
-</div>
+      </div>
+    </div>
 
     <div role="tabpanel" class="tab-pane" id="raw">
-<div class="raw">
-{{ text| safe }}
-</div>
-</div>
-</div>
+      <div class="raw">
+	{{ text| safe }}
+      </div>
+    </div>
+    
+    <div role="tabpanel" class="tab-pane" id="original">
+      <div class="raw">
+<iframe height="800" style="width:100%" src="http://docs.google.com/gview?url=http://kookles.vanatteveldt.com{{ object.docfile.url }}&embedded=true"></iframe>
+      </div>
+    </div>
+    
   </div>
+</div>
+<hr/>
+<p>  Status: {{status_name}} |
+  Date: {{ object.date }} | File: <a href="{{ object.docfile.url }}">{{ object.filename  }}</a>
 
+  {% if user.is_superuser %}| <a href="{% url 'admin:recipes_lesson_change' object.id %}">Aanpassen</a> {% endif %}
+  {% if user.is_superuser and object.status == 3 %}| <a href="{% url 'recipes:lesson-detail' object.id %}?check=4">Goedkeuren</a> {% endif %}
+</p>
 {% endblock %}

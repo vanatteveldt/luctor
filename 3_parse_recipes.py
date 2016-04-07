@@ -90,11 +90,10 @@ def parse_recipe(text):
     return title, recipes
         
 
-def get_md(title, recipes):
+def get_md(recipes):
     res = []
-    res.append("# {title}".format(**locals()))
     for recipe in recipes:
-        res.append("\n## {recipe.title}\n\n| |\n|---".format(**locals()))
+        res.append("\n## {recipe.title}\n".format(**locals()))
         for i in recipe.ingredients:
             i = "| {} |".format(re.sub("\t+", " | ", i))
             res.append(i)
@@ -103,6 +102,8 @@ def get_md(title, recipes):
             res.append(l)
     return "\n".join(res)
 
+def metadata_md(lesson):
+    return "---\nTitle: {lesson.title}\nDate: {lesson.date}\n---\n".format(**locals())
 
     
 
@@ -127,7 +128,7 @@ for lesson in lessons:
     txt = lesson.raw_text.replace("|", "").replace("#", "")
     
     title, recipes = parse_recipe(txt)
-    md = get_md(title, recipes)
+    md = metadata_md(lesson) + get_md(recipes)
     if lid:
         print( md)
     else:

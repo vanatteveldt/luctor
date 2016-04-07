@@ -15,8 +15,9 @@
   .parsed td {padding: 2px; background-color: #e3e3e3; margin:1em}
   .parsed table {margin-bottom: 1em;
     border-spacing: 2px;
-    border-collapse: separate;
- }
+  border-collapse: separate;
+  }
+  .parsed h1 {font-size:12px}
 </style>
 </head>
 
@@ -37,6 +38,12 @@
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      
+      <ul class="nav navbar-nav navbar-left">
+	{% if user.is_superuser %}<li><a href="{% url 'recipes:check' %}">Recept Checken ({{nchecked}} / {{ntotal}})</a></li> {% endif %}
+      </ul>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
       
       <ul class="nav navbar-nav navbar-right">
 	{% if user.is_authenticated %}<li><a>Ingelogd als: {{user.username}}</a></li> {% endif %}
