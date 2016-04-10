@@ -65,7 +65,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'haystack',
     'recipes',
-    'django_extensions',
 )
 
 MIDDLEWARE_CLASSES = (

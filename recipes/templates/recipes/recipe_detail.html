@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load admin_urls %}
+{% load highlight_all %}
+
+{% block content %}
+
+<h1>{{ object.title }}</h1>
+<p>Uit: <a href="{{object.lesson.get_absolute_url}}">{{object.lesson.title}}, {{ object.lesson.date }}</a> (<a href="{{ object.lesson.docfile.url }}">{{ object.lesson.filename  }})</a>
+
+<p><small>Ingredienten:</small><br/>
+
+<table>
+{% for row in ingredient_rows %}
+<tr>
+  {% for ing in row %}
+  <td>{{ing | highlight_all:highlight}}</td>
+  {% endfor %}
+</tr>
+{% endfor %}
+</table>
+
+<p><small>Instructies:</small></br/>
+
+{{ object.instructions | highlight_all:highlight }}
+
+{% endblock %}

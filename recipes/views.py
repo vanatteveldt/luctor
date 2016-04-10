@@ -4,13 +4,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.detail import DetailView
 from django.shortcuts import redirect
 
-from recipes.models import Lesson
+from recipes.models import Lesson, Recipe
 
 from haystack.generic_views import SearchView
 from haystack.forms import HighlightedSearchForm
 
 from haystack.utils import Highlighter
-from django.utils.html import strip_tags
+
 import markdown2
 from django.views.generic.base import RedirectView
 
@@ -56,8 +56,8 @@ class LessonView(LoginRequiredMixin, DetailView):
         highlight = self.request.GET.get('highlight')
         les = context['object']
         text = les.raw_text
-        
-        status_name = ["Ruw", "Ruwe tekst", "Titel en datum", "Ongeverifi\xeberd", "Geverifi\xeberd"][les.status]
+        recipes = les.recipes.all()
+        status_name = ["Ruw", "Ruwe tekst", "Titel en datum", "Ongeverifi\xeberd", "Geverifi\xeberd", "Gesplitst"][les.status]
 
         ntotal = Lesson.objects.all().count()
         nchecked = Lesson.objects.filter(status = 4).count()
@@ -74,7 +74,6 @@ class LessonView(LoginRequiredMixin, DetailView):
 
             
             p = p.replace("\r\n", "\n").replace("\n\n|", "\n\n|  |\n|---\n|")
-            print(repr(p))
             parsed_html = markdown2.markdown(p, extras=["tables", "metadata"])
         
         context.update(**locals())
@@ -90,3 +89,15 @@ class CheckRedirectView(RedirectView):
         les = Lesson.objects.filter(status = 3).order_by("?")[0]
         return les.get_absolute_url()
         return super(ArticleCounterRedirectView, self).get_redirect_url(*args, **kwargs)
+
+class RecipeView(LoginRequiredMixin, DetailView):
+    
+    model = Recipe
+    
+    def get_context_data(self, **kwargs):
+        context = super(RecipeView, self).get_context_data(**kwargs)
+        recept = context['object']
+        ingredient_rows = list(row.split("|") for row in recept.ingredients.splitlines())
+        highlight = self.request.GET.get('highlight')
+        context.update(**locals())
+        return context

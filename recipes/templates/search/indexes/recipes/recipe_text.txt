@@ -1,0 +1,4 @@
+{{ object.title }}
+{{ object.lesson_title }}
+{{ object.ingredients }}
+{{ object.instructions }}

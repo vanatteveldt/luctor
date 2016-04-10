@@ -20,3 +20,24 @@ class Lesson(models.Model):
 
     def get_absolute_url(self):
         return reverse('recipes:lesson-detail', args=[str(self.id)])
+
+class Recipe(models.Model):
+    title = models.CharField(max_length=200)
+    lesson = models.ForeignKey(Lesson, related_name="recipes")
+    ingredients = models.TextField()
+    instructions = models.TextField()
+
+    @property
+    def full_text(self):
+        return "\n\n".join([self.ingredients, self.instructions])
+
+    @property
+    def lesson_title(self):
+        return self.lesson.title
+        
+    def __str__(self):
+        return self.title
+
+
+    def get_absolute_url(self):
+        return reverse('recipes:recipe-detail', args=[str(self.id)])

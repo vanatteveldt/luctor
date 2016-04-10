@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 {% load highlight %}
+{% load highlight_all %}
 
 {% block content %}
-    <h2>Kookles zoeken</h2>
+    <h2>Recepten zoeken</h2>
 
     <form method="get" action="#">
         <table>
@@ -10,25 +11,28 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <input type="submit" value="Search">
+                    <input type="submit" value="Zoek">
                 </td>
             </tr>
         </table>
 
         {% if query %}
-            <h3>Results</h3>
+            <h3>Resultaten</h3>
 	    <ul class='results'>
             {% for result in object_list %}
-                <li/>
-                    <a href="{{ result.object.get_absolute_url }}?highlight={{query}}">{{ result.object.title }}</a>
- (<a href="{{ result.object.docfile.url }}">{{ result.object.docfile.name|cut:'./'  }}</a>)<br/>
-{% highlight result.object.raw_text with query max_length 250 %}
+                <li>
+<a href="{{ result.object.get_absolute_url }}?highlight={{query}}">{{ result.object.title | highlight_all:query }}</a>
+(<a href="{{ result.object.lesson.get_absolute_url }}">{{ result.object.lesson.title | highlight_all:query }}</a>, 
+<a href="{{ result.object.lesson.docfile.url }}">{{ result.object.lesson.docfile.name|cut:'./'  }}</a>)<br/>
+{% highlight result.object.full_text with query max_length 250 %} 
+<hr/>
+</li>
             {% empty %}
                 <p>No results found.</p>
             {% endfor %}
 	    </ul>
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}">previous</a> |
         {% endif %}
 
         <span class="current">
@@ -36,7 +40,7 @@
         </span>
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            | <a href="?q={{ query }}&page={{ page_obj.next_page_number }}">next</a>
         {% endif %}
     </span>
 
