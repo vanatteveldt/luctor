@@ -26,7 +26,7 @@ class SearchView(LoginRequiredMixin, SearchView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(SearchView, self).get_context_data(*args, **kwargs)
-        
+        context['liked_recipes'] = self.request.user.liked_recipes.all()[:10]
         return context
         
 
@@ -97,7 +97,18 @@ class RecipeView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(RecipeView, self).get_context_data(**kwargs)
         recept = context['object']
+        
+        like = self.request.GET.get('like')
+        if like is not None:
+            if (like == "1"):
+                recept.likes.add(self.request.user)
+            else:
+                recept.likes.remove(self.request.user)
+            
+
+        
         ingredient_rows = list(row.split("|") for row in recept.ingredients.splitlines())
         highlight = self.request.GET.get('highlight')
+        isliked = recept.likes.filter(pk=self.request.user.pk).exists()
         context.update(**locals())
         return context

@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.urlresolvers import reverse
+from django.conf import settings
 
 _PARSE_HELP = ("Pas hier de opdeling van de kookles in recepten aan. "
                "De titel van elk recept wordt aangegeven met ## titel, en ingredienten met | ingredient |. "
@@ -26,7 +27,9 @@ class Recipe(models.Model):
     lesson = models.ForeignKey(Lesson, related_name="recipes")
     ingredients = models.TextField()
     instructions = models.TextField()
-
+    from django.conf import settings
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="liked_recipes")
+    
     @property
     def full_text(self):
         return "\n\n".join([self.ingredients, self.instructions])

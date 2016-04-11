@@ -15,7 +15,7 @@ class FullTextHighlighter(Highlighter):
         return self.render_html(highlight_locations, 0, len(text_block))
 
 def highlight_all(text, query):
-    return FullTextHighlighter(query).highlight(text)
+    return FullTextHighlighter(query).highlight(text) if query else text
     
 def highlight_all_filter(text, query):
     return mark_safe(highlight_all(conditional_escape(text), query))

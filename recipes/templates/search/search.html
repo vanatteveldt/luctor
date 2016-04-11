@@ -52,8 +52,21 @@
                     {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}Next &raquo;{% if page.has_next %}</a>{% endif %}
                 </div>
             {% endif %}
-        {% else %}
-            {# Show some example queries to run, maybe query syntax, something else? #}
-        {% endif %}
+		{% elif liked_recipes %}
+		<h3>Favorieten</h3>
+		<ul class='results'>
+		{% for object in liked_recipes %}
+                <li>
+<a href="{{ object.get_absolute_url }}?highlight={{query}}">{{ object.title }}</a>
+(<a href="{{ object.lesson.get_absolute_url }}">{{ object.lesson.title }}</a>, 
+<a href="{{ object.lesson.docfile.url }}">{{ object.lesson.docfile.name|cut:'./'  }}</a>)<br/>
+{{ object.full_text|truncatechars:250 }} 
+<hr/>
+</li>
+            {% endfor %}
+		</ul>
+		
+		{# Show some example queries to run, maybe query syntax, something else? #}
+		{% endif %}
     </form>
 {% endblock %}

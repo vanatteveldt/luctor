@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<h1>{{ object.title }}</h1>
+<h1><a href="{{object.get_absolute_url}}?like={% if isliked %}0{% else %}1{%endif%}"><span class="glyphicon glyphicon-star{% if not isliked %}-empty{% endif %}" aria-hidden="true"></a></span> {{ object.title }}</h1>
 <p>Uit: <a href="{{object.lesson.get_absolute_url}}">{{object.lesson.title}}, {{ object.lesson.date }}</a> (<a href="{{ object.lesson.docfile.url }}">{{ object.lesson.filename  }})</a>
 
 <p><small>Ingredienten:</small><br/>
