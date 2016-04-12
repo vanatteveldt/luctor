@@ -23,4 +23,36 @@
 
 {{ object.instructions | highlight_all:highlight }}
 
+
+
+<div class="comments">
+  <label>Opmerkingen</label>
+  <ul>
+{% for comment in comments %}
+    <li>
+      <div class="image">
+        <img src="http://lorempixel.com/50/50/people/6" />
+      </div>
+      <div>
+        <p class="">
+{{ comment.text }}
+
+	</p>
+<span class="sub-text">{{comment.user}} at {{comment.date}}</span>
+	
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  <form action="#" method="POST">
+ {% csrf_token %}
+    <div class="form-group">
+      <textarea name="comment" placeholder="Opmerking toevoegen"></textarea>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-default">Plaatsen</button>
+    </div>
+  </form>
+  
+</div>
 {% endblock %}

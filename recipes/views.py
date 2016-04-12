@@ -2,9 +2,12 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.views.generic.detail import DetailView
-from django.shortcuts import redirect
+from django.views.generic.edit import UpdateView
 
-from recipes.models import Lesson, Recipe
+from django.shortcuts import redirect
+from django import forms
+
+from recipes.models import Lesson, Recipe, Comment
 
 from haystack.generic_views import SearchView
 from haystack.forms import HighlightedSearchForm
@@ -91,9 +94,14 @@ class CheckRedirectView(RedirectView):
         return super(ArticleCounterRedirectView, self).get_redirect_url(*args, **kwargs)
 
 class RecipeView(LoginRequiredMixin, DetailView):
-    
     model = Recipe
-    
+
+    def post(self, request, *args, **kwargs):
+        comment = self.request.POST.get('comment')
+        if comment:
+            Comment.objects.create(recipe  = self.get_object(), user=self.request.user, text=comment)
+        return self.get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(RecipeView, self).get_context_data(**kwargs)
         recept = context['object']
@@ -105,7 +113,7 @@ class RecipeView(LoginRequiredMixin, DetailView):
             else:
                 recept.likes.remove(self.request.user)
             
-
+        comments = recept.comments.all()
         
         ingredient_rows = list(row.split("|") for row in recept.ingredients.splitlines())
         highlight = self.request.GET.get('highlight')

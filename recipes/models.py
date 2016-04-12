@@ -44,3 +44,10 @@ class Recipe(models.Model):
 
     def get_absolute_url(self):
         return reverse('recipes:recipe-detail', args=[str(self.id)])
+
+class Comment(models.Model):
+    recipe = models.ForeignKey(Recipe, related_name="comments", null=True)
+    lesson = models.ForeignKey(Lesson, related_name="comments", null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="comments")
+    date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
+    text = models.TextField()
