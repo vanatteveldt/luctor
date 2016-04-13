@@ -3,3 +3,4 @@ whoosh
 git+git://github.com/django-haystack/django-haystack.git
 
 markdown2
+django-avatar
