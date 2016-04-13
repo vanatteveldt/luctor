@@ -6,6 +6,7 @@
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 <style>
 
+ul.results {list-style:none;}
   ul.results li {margin-bottom: 1em}
   .highlighted {background-color: yellow}
   .raw { white-space: pre-wrap; 
@@ -31,7 +32,7 @@
     display:table-cell;
 }
 .comments .image {
-    width:30px;
+    width:30px; height:30px;
     margin-right:5px;
     float:left;
 }
@@ -77,7 +78,7 @@
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
       
       <ul class="nav navbar-nav navbar-right">
-	{% if user.is_authenticated %}<li><a>Ingelogd als: {{user.username}}</a></li> {% endif %}
+	{% if user.is_authenticated %}<li><a href="{% url 'avatar_change' %}">Ingelogd als: {{user.username}}</a></li> {% endif %}
 	{% if user.is_superuser %}<li><a href="{% url 'admin:index' %}">Sitebeheer</a></li> {% endif %}
       <li><a href="{% url 'logout' %}?next=/">Uitloggen</a></li> 
        

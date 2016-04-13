@@ -21,14 +21,13 @@ class Lesson(models.Model):
 
     def get_absolute_url(self):
         return reverse('recipes:lesson-detail', args=[str(self.id)])
-
+        
 class Recipe(models.Model):
     title = models.CharField(max_length=200)
     lesson = models.ForeignKey(Lesson, related_name="recipes")
     ingredients = models.TextField()
     instructions = models.TextField()
-    from django.conf import settings
-    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="liked_recipes")
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="liked_recipes", through='Like')
     
     @property
     def full_text(self):
@@ -51,3 +50,10 @@ class Comment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="comments")
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
     text = models.TextField()
+
+class Like(models.Model):
+    recipe = models.ForeignKey(Recipe)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
+    class Meta:
+        unique_together = ('recipe', 'user')

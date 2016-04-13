@@ -7,7 +7,7 @@ from django.views.generic.edit import UpdateView
 from django.shortcuts import redirect
 from django import forms
 
-from recipes.models import Lesson, Recipe, Comment
+from recipes.models import Lesson, Recipe, Comment, Like
 
 from haystack.generic_views import SearchView
 from haystack.forms import HighlightedSearchForm
@@ -29,7 +29,13 @@ class SearchView(LoginRequiredMixin, SearchView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(SearchView, self).get_context_data(*args, **kwargs)
-        context['liked_recipes'] = self.request.user.liked_recipes.all()[:10]
+        
+        
+        your_likes = Like.objects.filter(user=self.request.user).order_by('-date')[:10]
+        other_likes = Like.objects.exclude(user=self.request.user).order_by('-date')[:10]
+        recent_lessons = Lesson.objects.order_by('-date')[:10]
+        recent_comments = Comment.objects.order_by('-date')[:10]
+        context.update(**locals())
         return context
         
 
@@ -108,10 +114,13 @@ class RecipeView(LoginRequiredMixin, DetailView):
         
         like = self.request.GET.get('like')
         if like is not None:
+            exists = Like.objects.filter(recipe=recept, user=self.request.user).exists()
             if (like == "1"):
-                recept.likes.add(self.request.user)
+                if not exists:
+                    Like.objects.create(recipe=recept, user=self.request.user)
             else:
-                recept.likes.remove(self.request.user)
+                if exists:
+                    Like.objects.filter(recipe=recept, user=self.request.user).delete()
             
         comments = recept.comments.all()
         

@@ -9,7 +9,7 @@ urlpatterns = [
     # url(r'^$', 'luctor.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
     url('^', include('django.contrib.auth.urls')),
-
+    url(r'^avatar/', include('avatar.urls')),
     url(r'^', include('recipes.urls', namespace='recipes')),
     url(r'^admin/', include(admin.site.urls)),
                            

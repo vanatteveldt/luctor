@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load admin_urls %}
 {% load highlight_all %}
+{% load avatar_tags %}
 
 {% block content %}
 
@@ -31,7 +32,7 @@
 {% for comment in comments %}
     <li>
       <div class="image">
-        <img src="http://lorempixel.com/50/50/people/6" />
+{% avatar comment.user 30 %}
       </div>
       <div>
         <p class="">
