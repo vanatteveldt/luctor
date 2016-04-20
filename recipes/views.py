@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import UpdateView, CreateView, FormView
+from django.views.generic.edit import UpdateView, CreateView, FormView, FormMixin
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import redirect
 from django import forms
@@ -46,7 +46,8 @@ class FullTextHighlighter(Highlighter):
         self.text_block = strip_tags(text_block)
         highlight_locations = self.find_highlightable_words()
         return self.render_html(highlight_locations, 0, len(text_block))
-                
+
+        
 class LessonView(LoginRequiredMixin, DetailView):
 
     model = Lesson
@@ -85,7 +86,7 @@ class LessonView(LoginRequiredMixin, DetailView):
             
             p = p.replace("\r\n", "\n").replace("\n\n|", "\n\n|  |\n|---\n|")
             parsed_html = markdown2.markdown(p, extras=["tables", "metadata"])
-        
+
         context.update(**locals())
         return context
 
@@ -100,13 +101,27 @@ class CheckRedirectView(RedirectView):
         return les.get_absolute_url()
         return super(ArticleCounterRedirectView, self).get_redirect_url(*args, **kwargs)
 
-class RecipeView(LoginRequiredMixin, DetailView):
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['text', 'image']
+    def clean(self):
+        cleaned_data = super(CommentForm, self).clean()
+        text = cleaned_data.get("text")
+        image = cleaned_data.get("image")
+        if not (text or image):
+            raise forms.ValidationError("No comment or image provided!")
+            
+class RecipeView(LoginRequiredMixin, FormMixin, DetailView):
     model = Recipe
+    form_class = CommentForm
 
     def post(self, request, *args, **kwargs):
-        comment = self.request.POST.get('comment')
-        if comment:
-            Comment.objects.create(recipe  = self.get_object(), user=self.request.user, text=comment)
+        form = self.get_form()
+        if form.is_valid():
+            form.instance.user = self.request.user
+            form.instance.recipe = self.get_object()
+            form.save()
         return self.get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -128,6 +143,9 @@ class RecipeView(LoginRequiredMixin, DetailView):
         ingredient_rows = list(row.split("|") for row in recept.ingredients.splitlines())
         highlight = self.request.GET.get('highlight')
         isliked = recept.likes.filter(pk=self.request.user.pk).exists()
+
+        commentform = self.get_form()
+        
         context.update(**locals())
         return context
 

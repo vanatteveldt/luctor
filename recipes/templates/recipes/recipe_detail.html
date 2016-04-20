@@ -2,15 +2,17 @@
 {% load admin_urls %}
 {% load highlight_all %}
 {% load avatar_tags %}
+{% load widget_tweaks %}
 
 {% block content %}
 
 <h1><a href="{{object.get_absolute_url}}?like={% if isliked %}0{% else %}1{%endif%}"><span class="glyphicon glyphicon-star{% if not isliked %}-empty{% endif %}" aria-hidden="true"></a></span> {{ object.title }}</h1>
 <p>Uit: <a href="{{object.lesson.get_absolute_url}}">{{object.lesson.title}}, {{ object.lesson.date }}</a> (<a href="{{ object.lesson.docfile.url }}">{{ object.lesson.filename  }})</a>
+{% if user.is_superuser %}| <a href="{% url 'admin:recipes_recipe_change' object.id %}">Aanpassen</a> {% endif %}
 
 <p><small>Ingredienten:</small><br/>
 
-<table>
+<table class="ingredients">
 {% for row in ingredient_rows %}
 <tr>
   {% for ing in row %}
@@ -31,28 +33,45 @@
   <ul>
 {% for comment in comments %}
     <li>
-      <div class="image">
+      <div class="avatar">
 {% avatar comment.user 30 %}
       </div>
       <div>
         <p class="">
 {{ comment.text }}
+{% if comment.image %}
+<div>
+  <a href="{{comment.image.url}}">
+    <img class="foto" src="{{ comment.image.url }}" />
+    </a>
+</div>
+{% endif %}
 
 	</p>
-<span class="sub-text">{{comment.user}} at {{comment.date}}</span>
+<span class="sub-text">geplaatst door {{comment.user}} op {{comment.date}}</span>
 	
       </div>
     </li>
     {% endfor %}
   </ul>
-  <form action="#" method="POST">
+  <form action="#" method="POST" class="form-horizontal" enctype='multipart/form-data'> 
  {% csrf_token %}
     <div class="form-group">
-      <textarea name="comment" placeholder="Opmerking toevoegen"></textarea>
+      <div class="col-sm-12">
+{% render_field commentform.text placeholder="Commentaar toevoegen" rows="5" %}
+      </div>
     </div>
     <div class="form-group">
-      <button class="btn btn-default">Plaatsen</button>
+      <label for="{{ commentform.image.id_for_label }}" class="col-sm-2 control-label">Foto toevoegen: </label>
+      <div class="col-sm-10">
+	{% render_field commentform.image %}
+      </div>
     </div>
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button class="btn btn-default" >Commentaar / Foto Plaatsen</button>
+    </div>
+  </div>
   </form>
   
 </div>

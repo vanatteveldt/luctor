@@ -4,21 +4,31 @@
 	  rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    {% block javascript %}{% endblock %}
     <style>
 
 ul.results {list-style:none;}
-  ul.results li {margin-bottom: 1em}
-  .highlighted {background-color: yellow}
-  .raw { white-space: pre-wrap; 
-   padding: 1em; background-color: #ddd;
-  font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;}
-  .parsed {padding: 1em;}
-  .parsed td {padding: 2px; background-color: #e3e3e3; margin:1em}
-  .parsed table {margin-bottom: 1em;
+ul.results li {margin-bottom: 1em}
+.highlighted {background-color: yellow}
+.raw { white-space: pre-wrap; 
+     padding: 1em; background-color: #ddd;
+    font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;}
+.parsed {padding: 1em;}
+.parsed td {padding: 2px; background-color: #e3e3e3; margin:1em}
+.parsed table {
+    margin-bottom: 1em;
     border-spacing: 2px;
-  border-collapse: separate;
+    border-collapse: separate;
   }
-  .parsed h1 {font-size:12px}
+
+.parsed h1 {font-size:12px}
+
+.ingredients td {padding: 2px; background-color: #eee; margin:1em}
+table.ingredients {
+    margin-bottom: 1em;
+    border-spacing: 3px;
+    border-collapse: separate;
+  }
 
 .comments ul {
     padding:0;
@@ -31,12 +41,12 @@ ul.results {list-style:none;}
 .comments li > div {
     display:table-cell;
 }
-.comments .image {
+.avatar {
     width:30px; height:30px;
     margin-right:5px;
     float:left;
 }
-.comments img {
+.avatar img {
     width:100%;
     border-radius:50%;
 }
@@ -48,7 +58,10 @@ ul.results {list-style:none;}
     font-family:verdana;
     font-size:11px;
 }
-
+img.foto {
+    max-width: 300px; 
+    max-height: 300px
+}
 .comments textarea {width: 90%}
     </style>
   </head>
