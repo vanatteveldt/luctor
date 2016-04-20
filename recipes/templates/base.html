@@ -72,6 +72,8 @@ ul.results {list-style:none;}
 	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 	  
 	  <ul class="nav navbar-nav navbar-left">
+	    {% if user.is_superuser %}<li><a href="{% url 'recipes:upload' %}">Nieuwe les uploaden</a></li> {% endif %}
+
 	    <!--{% if user.is_superuser %}<li><a href="{% url 'recipes:check' %}">Recept Checken ({{nchecked}} / {{ntotal}})</a></li> {% endif %}-->
 	  </ul>
 	  

@@ -8,7 +8,7 @@ from django.shortcuts import redirect
 from django import forms
 import logging
 from recipes.models import Lesson, Recipe, Comment, Like
-
+from recipes.search_indexes import RecipeIndex
 from haystack.generic_views import SearchView
 from haystack.forms import HighlightedSearchForm
 
@@ -175,8 +175,10 @@ class CheckView(UpdateView):
         if actie == "ok": # redirect to lesson object
             for recipe in get_recipes(self.object):
                 recipe.save()
+                RecipeIndex().update_object(recipe)
             self.object.status = 5
             self.object.save()
+            
             return res
         elif actie == "refresh":
             return self.render_to_response(self.get_context_data())
@@ -188,7 +190,6 @@ class CheckView(UpdateView):
         recipes = list(get_recipes(self.object))
         for recipe in recipes:            
             recipe.ingredient_rows = list(row.split("|") for row in recipe.ingredients.splitlines())
-            print(recipe.ingredient_rows)
-        print("!!", recipes)
+
         context.update(**locals())
         return context
