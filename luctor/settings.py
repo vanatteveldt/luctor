@@ -83,10 +83,12 @@ ROOT_URLCONF = 'luctor.urls'
 
 WSGI_APPLICATION = 'luctor.wsgi.application'
 
+ES_URL = os.environ.get("LUCTOR_ES_URL", 'localhost:9200')
+
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-        'URL': 'localhost:9200',
+        'URL': ES_URL,
         'INDEX_NAME': 'haystack_kookles'
     },
 }
