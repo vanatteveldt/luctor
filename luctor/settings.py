@@ -66,6 +66,7 @@ INSTALLED_APPS = (
     'haystack',
     'avatar',
     'recipes',
+    'widget_tweaks'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -84,8 +85,9 @@ WSGI_APPLICATION = 'luctor.wsgi.application'
 
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(DATA_DIR, 'whoosh_index'),
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'localhost:9200',
+        'INDEX_NAME': 'haystack_kookles'
     },
 }
 

@@ -44,19 +44,19 @@ def get_text(fn):
     return False, "\n".join(error)
                 
                      
-            
 
-for l in Lesson.objects.filter(status=2):
-    fn = l.docfile.file.file.name
-    print(l.id, fn)
+if __name__ == '__main__':
+    for l in Lesson.objects.filter(status=2):
+        fn = l.docfile.file.file.name
+        print(l.id, fn)
 
-    success, msg = get_text(fn)
+        success, msg = get_text(fn)
 
-    if success:
-        l.status = 1
-        l.raw_text = msg
-        l.problems = ""
-    else:
-        l.problems = msg
-    l.save()
+        if success:
+            l.status = 1
+            l.raw_text = msg
+            l.problems = ""
+        else:
+            l.problems = msg
+        l.save()
 

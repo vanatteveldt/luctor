@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load admin_urls %}
+{% block content %}
+
+<h1>Nieuwe les uploaden</h1>
+
+<form action="#" method="post" enctype='multipart/form-data'>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Uploaden" />
+</form>
+
+{% if error %}
+<div class="alert alert-danger" role="alert">
+  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>Error on converting file {{ fn }}
+<pre>
+{{ error }}
+</pre>
+  
+</div>
+{% endif %}
+
+{% endblock %}

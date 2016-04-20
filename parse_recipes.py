@@ -66,6 +66,7 @@ def isIngredient(lines, i, in_ingredient=False):
         return True
     
 def parse_recipe(text):
+    text = text.replace("|", "").replace("#", "")
     lines = text.split('\n')
     title = None
     recipes = []
@@ -106,34 +107,34 @@ def metadata_md(lesson):
     return "---\nTitle: {lesson.title}\nDate: {lesson.date}\n---\n".format(**locals())
 
     
-
-import sys
-
-try:
-    if len(sys.argv)>1:
-        lid = int(sys.argv[1])
-    else:
-        lid = None
-except:
-    print(_isIngredient(' '.join(sys.argv[1:]), debug=True))
+if __name__ == '__main__':
     import sys
-    sys.exit()
 
-lessons = Lesson.objects.filter(status=3)
-if lid:
-    lessons = lessons.filter(pk=lid)
-    
-for lesson in lessons:
-    #for l in Lesson.objects.filter(pk=int(sys.argv[1])).all():
-    txt = lesson.raw_text.replace("|", "").replace("#", "")
-    
-    title, recipes = parse_recipe(txt)
-    md = metadata_md(lesson) + get_md(recipes)
+    try:
+        if len(sys.argv)>1:
+            lid = int(sys.argv[1])
+        else:
+            lid = None
+    except:
+        print(_isIngredient(' '.join(sys.argv[1:]), debug=True))
+        import sys
+        sys.exit()
+
+    lessons = Lesson.objects.filter(status=3)
     if lid:
-        print( md)
-    else:
-        lesson.parsed = md
-        lesson.problems = len(recipes)
-        lesson.status = 3
-        lesson.save()
-        
+        lessons = lessons.filter(pk=lid)
+
+    for lesson in lessons:
+        #for l in Lesson.objects.filter(pk=int(sys.argv[1])).all():
+
+        txt = lesson.raw_text
+        title, recipes = parse_recipe(txt)
+        md = metadata_md(lesson) + get_md(recipes)
+        if lid:
+            print( md)
+        else:
+            lesson.parsed = md
+            lesson.problems = len(recipes)
+            lesson.status = 3
+            lesson.save()
+

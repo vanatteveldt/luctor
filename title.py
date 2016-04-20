@@ -11,6 +11,18 @@ def get_title_line(l):
             return line
     raise Exception()
 
+def read_dateline(dateline):
+    if "\t" in dateline:
+        title, date = dateline.split("\t", 1)
+    elif "   " in dateline:
+        title, date = dateline.split("   ", 1)
+    else:
+        raise Exception("Could not parse {dateline}".format(**locals()))
+    title = title.strip()
+    date = date.strip()
+    date = read_date(date)
+    return title, date
+    
 def read_date(date):
     date = date.replace("\t", " ")
     match = re.search(r"(\d+) *([a-zA-Z\.]+) *(\d{4})", date)
@@ -33,20 +45,8 @@ def read_date(date):
         
 for lesson in Lesson.objects.filter(status=1):
     l = get_title_line(lesson)
-    if "\t" in l:
-        title, date = l.split("\t", 1)
-    elif "   " in l:
-        title, date = l.split("   ", 1)
-    else:
-        lesson.problems = "Could not parse {l}".format(**locals())
-        lesson.save()
-        continue
-
-    
-    title = title.strip()
-    date = date.strip()
     try:
-        date = read_date(date)
+        title, date = read_dateline(l)
     except Exception as e:
         lesson.status = 1
         lesson.problems = "Cannot parse date: {date} ({e})".format(**locals())

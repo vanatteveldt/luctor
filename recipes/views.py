@@ -2,20 +2,21 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import UpdateView
-
+from django.views.generic.edit import UpdateView, CreateView, FormView
+from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import redirect
 from django import forms
-
+import logging
 from recipes.models import Lesson, Recipe, Comment, Like
 
 from haystack.generic_views import SearchView
 from haystack.forms import HighlightedSearchForm
 
 from haystack.utils import Highlighter
-
+import os
 import markdown2
 from django.views.generic.base import RedirectView
+from .upload import process_file, get_recipes
 
 class SearchView(LoginRequiredMixin, SearchView):
     """My custom search view."""
@@ -127,5 +128,67 @@ class RecipeView(LoginRequiredMixin, DetailView):
         ingredient_rows = list(row.split("|") for row in recept.ingredients.splitlines())
         highlight = self.request.GET.get('highlight')
         isliked = recept.likes.filter(pk=self.request.user.pk).exists()
+        context.update(**locals())
+        return context
+
+class UploadView(CreateView):
+    template_name="recipes/upload.html"
+    model = Lesson
+    fields = ['docfile']
+    def form_valid(self, form):
+        res = super(UploadView, self).form_valid(form)
+        try:
+            process_file(self.object)
+        except Exception as e:
+            logging.exception("Error on processing {}".format(self.object.docfile))
+            self.error = str(e) 
+            self.fn = self.object.docfile.file.name
+            os.remove(self.fn)
+            self.object.delete()
+            return self.form_invalid(form)
+            
+        
+        return res
+        
+    def get_context_data(self, **kwargs):
+        context = super(UploadView, self).get_context_data(**kwargs)
+        error = getattr(self, 'error', None)
+        fn = os.path.basename(getattr(self, 'fn', ''))
+        context.update(**locals())
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('recipes:check', args=[self.object.id])
+
+        
+class CheckView(UpdateView):
+    fields = ['title', 'date', 'parsed']
+    model = Lesson
+    template_name="recipes/check.html"
+        
+    def form_valid(self, form):
+        res = super(CheckView, self).form_valid(form)
+        actie = self.request.POST['actie']
+        if actie == "remove":
+            self.object.delete()
+            return redirect('recipes:search')
+        if actie == "ok": # redirect to lesson object
+            for recipe in get_recipes(self.object):
+                recipe.save()
+            self.object.status = 5
+            self.object.save()
+            return res
+        elif actie == "refresh":
+            return self.render_to_response(self.get_context_data())
+            
+    
+
+    def get_context_data(self, **kwargs):
+        context = super(CheckView, self).get_context_data(**kwargs)
+        recipes = list(get_recipes(self.object))
+        for recipe in recipes:            
+            recipe.ingredient_rows = list(row.split("|") for row in recipe.ingredients.splitlines())
+            print(recipe.ingredient_rows)
+        print("!!", recipes)
         context.update(**locals())
         return context
