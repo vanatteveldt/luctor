@@ -93,6 +93,15 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+# MONKEY PATCH!!!!
+from haystack.backends import elasticsearch_backend
+elasticsearch_backend.FIELD_MAPPINGS['ngram'] = {
+    'type': 'string', 
+    "index_analyzer": "ngram_analyzer",
+    "search_analyzer": "standard"
+}
+# THANK YOU!!!!!
+
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
