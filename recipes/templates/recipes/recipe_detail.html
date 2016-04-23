@@ -4,14 +4,35 @@
 {% load avatar_tags %}
 {% load widget_tweaks %}
 
-{% block content %}
+{% block head %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightslider/1.1.5/css/lightslider.min.css" />                  
+{% endblock %}
 
-<h1><a href="{{object.get_absolute_url}}?like={% if isliked %}0{% else %}1{%endif%}"><span class="glyphicon glyphicon-star{% if not isliked %}-empty{% endif %}" aria-hidden="true"></a></span> {{ object.title }}</h1>
-<p>Uit: <a href="{{object.lesson.get_absolute_url}}">{{object.lesson.title}}, {{ object.lesson.date }}</a> (<a href="{{ object.lesson.docfile.url }}">{{ object.lesson.filename  }})</a>
-{% if user.is_superuser %}| <a href="{% url 'admin:recipes_recipe_change' object.id %}">Aanpassen</a> {% endif %}
+{% block foot %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightslider/1.1.5/js/lightslider.js"></script>
+
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $("#lightSlider").lightSlider(); 
+      });
+    </script>
+{% endblock %}
+
+{% block content %}
+<h1>
+  <a href="{{object.get_absolute_url}}?like={% if isliked %}0{% else %}1{%endif%}">
+    <span class="glyphicon glyphicon-star{% if not isliked %}-empty{% endif %}" aria-hidden="true"></span>
+  </a>
+  {{ object.title }}
+</h1>
+<p>Uit: 
+  <a href="{{object.lesson.get_absolute_url}}">{{object.lesson.title}}, {{ object.lesson.date }}</a> 
+  (<a href="{{ object.lesson.docfile.url }}">{{ object.lesson.filename  }})</a>
+  {% if user.is_superuser %}| <a href="{% url 'admin:recipes_recipe_change' object.id %}">Aanpassen</a> {% endif %}
+</p>
 
 <p><small>Ingredienten:</small><br/>
-
 <table class="ingredients">
 {% for row in ingredient_rows %}
 <tr>
@@ -23,13 +44,45 @@
 </table>
 
 <p><small>Instructies:</small></br/>
-
 {{ object.instructions | highlight_all:highlight }}
 
+<hr/><h2>Foto's</h2>
+{% if object.pictures.all.exists %}
+<div class="pictures">
+    <ul id="lightSlider">
+{% for picture in object.pictures.all %}
+    <li><img class="foto" src="{{ picture.image.url }}" />
+<br/>
+<div style="height:2em">
+{% if user.is_superuser or user == picture.user %}
+<a href="{% url 'recipes:picture-delete' picture.id %}"
+	onclick="if (!confirm('Weet je het zeker?')) return false;" type="button" class="btn btn-danger" aria-label="Delete">
+  <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+</a>
+<a href="{% url 'recipes:picture-like' picture.id %}" 
+class="btn btn-{% if picture.favourite %}success{%else%}default{% endif %}" aria-label="Favourite">
+  <span class="glyphicon glyphicon-star{% if not picture.favourite %}-empty{% endif %}" aria-hidden="true"></span>
+</a>
+{% endif %}
+<span class="sub-text">{{picture.user}} op {{picture.date}}</span>
+</div>
+</li>
+{% endfor %}
+    </ul>
+</div>
+{% endif %}
 
+
+  <form action="{% url 'recipes:picture-add' object.id %} " method="POST" class="form-inline" enctype='multipart/form-data'> 
+ {% csrf_token %}
+<div class="form-group">
+	{% render_field commentform.image %}
+</div>
+      <button class="btn btn-default" >Foto Toevoegen</button>
+  </form>
 
 <div class="comments">
-  <label>Opmerkingen</label>
+<hr/>  <h2>Opmerkingen</h2>
   <ul>
 {% for comment in comments %}
     <li>

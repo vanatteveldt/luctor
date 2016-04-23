@@ -44,14 +44,26 @@ class Recipe(models.Model):
     def get_absolute_url(self):
         return reverse('recipes:recipe-detail', args=[str(self.id)])
 
+class Picture(models.Model):
+    recipe = models.ForeignKey(Recipe, related_name="pictures")
+    image = models.ImageField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="pictures")
+    date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
+    favourite = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-favourite', 'date']
+        
 class Comment(models.Model):
-    recipe = models.ForeignKey(Recipe, related_name="comments", null=True)
-    lesson = models.ForeignKey(Lesson, related_name="comments", null=True)
+    recipe = models.ForeignKey(Recipe, related_name="comments")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="comments")
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
     image = models.ImageField(null=True, blank=True)
     text = models.TextField(null=True, blank=True)
 
+    class Meta:
+        ordering = ['date']
+        
 class Like(models.Model):
     recipe = models.ForeignKey(Recipe)
     user = models.ForeignKey(settings.AUTH_USER_MODEL)

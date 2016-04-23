@@ -16,12 +16,16 @@
                 </td>
             </tr>
         </table>
+    </form>
 
         {% if query %}
             <h3>Resultaten</h3>
 	    <ul class='results'>
             {% for result in object_list %}
                 <li>
+{% if result.object.pictures.all.0 %}
+	  <div class="thumb"><img src="{{ result.object.pictures.all.0.image.url }}"></img></div>
+{% endif %}
 <a href="{{ result.object.get_absolute_url }}?highlight={{query}}">{{ result.object.title | highlight_all:query }}</a>
 (<a href="{{ result.object.lesson.get_absolute_url }}">{{ result.object.lesson.title | highlight_all:query }}</a>, 
 <a href="{{ result.object.lesson.docfile.url }}">{{ result.object.lesson.docfile.name|cut:'./'  }}</a>)<br/>
@@ -43,8 +47,6 @@
         {% if page_obj.has_next %}
             | <a href="?q={{ query }}&page={{ page_obj.next_page_number }}">next</a>
         {% endif %}
-    </span>
-
 
             {% if page.has_previous or page.has_next %}
                 <div>
@@ -53,25 +55,80 @@
                     {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}Next &raquo;{% if page.has_next %}</a>{% endif %}
                 </div>
             {% endif %}
-		{% else %}
-		<h3>Jouw favorieten</h3>
-		<ul class='results'>
-		{% for object in your_likes %}
-                <li>
+		{% else %} 
+<!-- no results, show favourites and new lessons -->
 
-<p>
-<a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
-(<a href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>, 
-<a href="{{ object.recipe.lesson.docfile.url }}">{{ object.recipe.lesson.docfile.name|cut:'./'  }}</a>)<br/>
-{{ object.recipe.full_text|truncatechars:250 }} 
-<span class="sub-text">{{object.date}}</span>
 
-</p>
+<div class="row">
+  <div class="col-md-4">
 
-</li>
-            {% endfor %}
-		</ul>
+    <h3>Favorieten</h3>
+    <ul class='results'>
+      {% for object in your_likes %}
+      <li>
+	  <div class="thumb"><img src="{{ object.recipe.pictures.all.0.image.url }}"></img></div>
+	<p>
 
+	  <a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
+	  (<a href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>, 
+	  <a href="{{ object.recipe.lesson.docfile.url }}">{{ object.recipe.lesson.docfile.name|cut:'./'  }}</a>)<br/>
+	  {{ object.recipe.full_text|truncatechars:250 }} 
+	  <span class="sub-text">{{object.date}}</span>
+	  
+	</p>
+
+      </li>
+      {% endfor %}
+    </ul>
+
+  </div>
+  <div class="col-md-4">
+    
+    <h3>Recente comments</h3>
+    <ul class='results comments'>
+      {% for object in recent_comments %}
+      <li>
+	<div class="image">{% avatar object.user 30 %}</div>
+	<div>
+	  <p>
+	    <a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
+	    (<a href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>, 
+	    <a href="{{ object.recipe.lesson.docfile.url }}">{{ object.recipe.lesson.docfile.name|cut:'./'  }}</a>)<br/>
+	    {{ object.text }}
+	  </p>
+	  <span class="sub-text">door {{object.user}} op {{object.date}}</span>
+	</div>
+      </li>
+      {% endfor %}
+    </ul>
+    
+  </div>
+  <div class="col-md-4">
+    
+    
+    <h3>Nieuwe kooklessen</h3>
+    <ul class='results'>
+      {% for object in recent_lessons %}
+      {% for recipe in object.recipes.all %}
+      {% for picture in recipe.pictures.all %}
+      <div class="thumb"><img src="{{ picture.image.url }}" /></div>
+      {% endfor %}
+      {% endfor %}
+      <li>
+	<a href="{{ object.get_absolute_url }}?highlight={{query}}">{{ object.title }}</a>
+	(<a href="{{ object.lesson.docfile.url }}">{{ object.docfile.name|cut:'./'  }}</a>)
+	<br/>
+	{% for recipe in object.recipes.all %}{{recipe.title}}{% if not forloop.last %}, {% endif %} {% endfor %}
+      </li>
+      {% endfor %}
+    </ul>
+    
+
+    
+    
+  </div>
+<!--
+  <div class="col-md-4">
 
 		<h3>Recente likes</h3>
 		<ul class='results comments'>
@@ -90,47 +147,11 @@
 </li>
             {% endfor %}
 		</ul>
+    </div>-->
+
+  </div> <!-- end row -->
 
 
-
-		<h3>Recente comments</h3>
-		<ul class='results comments'>
-		{% for object in recent_comments %}
-                <li>
-<div class="image">{% avatar object.user 30 %}</div>
-<div>
-<p>
-<a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
-(<a href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>, 
-<a href="{{ object.recipe.lesson.docfile.url }}">{{ object.recipe.lesson.docfile.name|cut:'./'  }}</a>)<br/>
-{{ object.text }}
-</p>
-<span class="sub-text">door {{object.user}} op {{object.date}}</span>
-</div>
-</li>
-            {% endfor %}
-		</ul>
-
-
-		<h3>Nieuwe kooklessen</h3>
-		<ul class='results'>
-		{% for object in recent_lessons %}
-                <li>
-<a href="{{ object.get_absolute_url }}?highlight={{query}}">{{ object.title }}</a>
-(
-<a href="{{ object.lesson.docfile.url }}">{{ object.docfile.name|cut:'./'  }}</a>)
-) <br/>
-{% for recipe in object.recipes.all %}{{recipe.title}} {% if not forloop.last %} | {% endif %} {% endfor %}
-</li>
-            {% endfor %}
-		</ul>
-
-
-
-		
-
-		
-		{# Show some example queries to run, maybe query syntax, something else? #}
+  
 		{% endif %}
-    </form>
 {% endblock %}

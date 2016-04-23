@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from django.core.exceptions import PermissionDenied
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView, FormView, FormMixin
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse_lazy, reverse
 from django.shortcuts import redirect
 from django import forms
 import logging
-from recipes.models import Lesson, Recipe, Comment, Like
+from recipes.models import Lesson, Recipe, Comment, Like, Picture
 from recipes.search_indexes import RecipeIndex
 from haystack.generic_views import SearchView
 from haystack.forms import HighlightedSearchForm
@@ -17,6 +17,7 @@ import os
 import markdown2
 from django.views.generic.base import RedirectView
 from .upload import process_file, get_recipes
+from django.contrib.auth.decorators import user_passes_test
 
 class SearchView(LoginRequiredMixin, SearchView):
     """My custom search view."""
@@ -93,7 +94,6 @@ class LessonView(LoginRequiredMixin, DetailView):
     
 
 class CheckRedirectView(RedirectView):
-
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
@@ -101,6 +101,41 @@ class CheckRedirectView(RedirectView):
         return les.get_absolute_url()
         return super(ArticleCounterRedirectView, self).get_redirect_url(*args, **kwargs)
 
+class DeletePictureView(RedirectView):
+    permanent = False
+    def get_redirect_url(self, pk):
+        p = Picture.objects.get(pk=pk)
+        if not ( self.request.user.is_superuser or self.request.user == p.user):
+            raise PermissionDenied()
+        recept = p.recipe
+        p.delete()
+        return recept.get_absolute_url()
+    
+    
+class LikePictureView(RedirectView):
+    permanent = False
+    def get_redirect_url(self, pk):
+        p = Picture.objects.get(pk=pk)
+        p.favourite = not p.favourite
+        p.save()
+        return p.recipe.get_absolute_url()
+
+        
+class AddPictureView(CreateView):
+    model = Picture
+    fields = ['image']
+        
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.recipe_id = self.kwargs['pk']
+        return super(AddPictureView, self).form_valid(form)
+        
+    def form_invalid(self, form):
+        return redirect(self.get_success_url())
+    def get_success_url(self):
+        return reverse('recipes:recipe-detail', kwargs=self.kwargs)
+    
+        
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
@@ -112,12 +147,17 @@ class CommentForm(forms.ModelForm):
         if not (text or image):
             raise forms.ValidationError("No comment or image provided!")
             
-class RecipeView(LoginRequiredMixin, FormMixin, DetailView):
+class RecipeView(LoginRequiredMixin, DetailView):
     model = Recipe
     form_class = CommentForm
 
     def post(self, request, *args, **kwargs):
-        form = self.get_form()
+
+        form_kwargs = {
+            'data': self.request.POST,
+            'files': self.request.FILES,
+        }
+        form = CommentForm(**form_kwargs)
         if form.is_valid():
             form.instance.user = self.request.user
             form.instance.recipe = self.get_object()
@@ -144,7 +184,8 @@ class RecipeView(LoginRequiredMixin, FormMixin, DetailView):
         highlight = self.request.GET.get('highlight')
         isliked = recept.likes.filter(pk=self.request.user.pk).exists()
 
-        commentform = self.get_form()
+        commentform = CommentForm()
+        pictureform = AddPictureView().get_form_class()()
         
         context.update(**locals())
         return context

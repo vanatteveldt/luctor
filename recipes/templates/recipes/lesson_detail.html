@@ -23,6 +23,9 @@
     <div role="tabpanel" class="tab-pane active" id="recipes">
       <div class="recipes">
 {% for recipe in recipes %}
+  {% for picture in recipe.pictures.all %}
+<img class="foto-small" src="{{ picture.image.url }}" />
+  {% endfor %}
 <h2><a href="{{recipe.get_absolute_url}}">{{recipe.title}}</a></h2>
 <p>{{recipe.ingredients}}<p>
 <p>{{recipe.instructions}}<p>
