@@ -14,8 +14,12 @@
 
     <script type="text/javascript">
       $(document).ready(function() {
-        $("#lightSlider").lightSlider(); 
+        $("#lightSlider").lightSlider({autoWidth:true, enableDrag:false}); 
+      $("#lightSlider img").click( function() {
+      window.location.href = $(this)[0]['src'];
       });
+      });
+
     </script>
 {% endblock %}
 
