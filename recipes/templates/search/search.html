@@ -66,7 +66,9 @@
     <ul class='results'>
       {% for object in your_likes %}
       <li>
-	  <div class="thumb"><img src="{{ object.recipe.pictures.all.0.image.url }}"></img></div>
+	{% if object.recipe.pictures.all.0 %}
+	<div class="thumb"><img src="{{ object.recipe.pictures.all.0.image.url }}"></img></div>
+	{% endif %}
 	<p>
 
 	  <a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
