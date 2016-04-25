@@ -14,10 +14,7 @@
 
     <script type="text/javascript">
       $(document).ready(function() {
-        $("#lightSlider").lightSlider({autoWidth:true, enableDrag:false}); 
-      $("#lightSlider img").click( function() {
-      window.location.href = $(this)[0]['src'];
-      });
+        $("#lightSlider").lightSlider({autoWidth:true}); 
       });
 
     </script>
@@ -55,7 +52,7 @@
 <div class="pictures">
     <ul id="lightSlider">
 {% for picture in object.pictures.all %}
-    <li><img class="foto" src="{{ picture.image.url }}" />
+    <li><a href="{{ picture.image.url}}"><img class="foto" src="{{ picture.image_small.url }}" /></a>
 <br/>
 <div style="height:2em">
 {% if user.is_superuser or user == picture.user %}

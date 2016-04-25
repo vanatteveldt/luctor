@@ -47,6 +47,8 @@ class Recipe(models.Model):
 class Picture(models.Model):
     recipe = models.ForeignKey(Recipe, related_name="pictures")
     image = models.ImageField()
+    image_small = models.ImageField(null=True)
+    image_thumb = models.ImageField(null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="pictures")
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
     favourite = models.BooleanField(default=False)

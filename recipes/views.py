@@ -11,6 +11,7 @@ from recipes.models import Lesson, Recipe, Comment, Like, Picture
 from recipes.search_indexes import RecipeIndex
 from haystack.generic_views import SearchView
 from haystack.forms import HighlightedSearchForm
+from django.core.files.base import ContentFile
 
 from haystack.utils import Highlighter
 import os
@@ -18,7 +19,8 @@ import markdown2
 from django.views.generic.base import RedirectView
 from .upload import process_file, get_recipes
 from django.contrib.auth.decorators import user_passes_test
-
+from PIL import Image
+from io import BytesIO
 class SearchView(LoginRequiredMixin, SearchView):
     """My custom search view."""
 
@@ -120,6 +122,21 @@ class LikePictureView(RedirectView):
         p.save()
         return p.recipe.get_absolute_url()
 
+def create_thumbnail(inf, size=300):
+    im = Image.open(inf)
+    im.thumbnail((size,size), Image.ANTIALIAS)
+    f = BytesIO()
+    im.save(f, format='jpeg')
+    bytes = f.getvalue()
+    return bytes
+        
+def save_thumbnail(source_field, destination_field, size=300):
+    inf = source_field.file.name
+    fn = os.path.splitext(os.path.basename(inf))[0]
+    outf = "{fn}-small-{size}.jpg".format(**locals())
+    bytes = create_thumbnail(inf, size)
+    destination_field.save(outf, ContentFile(bytes))
+   
         
 class AddPictureView(CreateView):
     model = Picture
@@ -128,7 +145,10 @@ class AddPictureView(CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user
         form.instance.recipe_id = self.kwargs['pk']
-        return super(AddPictureView, self).form_valid(form)
+
+        res = super(AddPictureView, self).form_valid(form)
+        thumbnails.set_thubmnails(self.object)
+        return res
         
     def form_invalid(self, form):
         return redirect(self.get_success_url())

@@ -24,7 +24,7 @@
             {% for result in object_list %}
                 <li>
 {% if result.object.pictures.all.0 %}
-	  <div class="thumb"><img src="{{ result.object.pictures.all.0.image.url }}"></img></div>
+	  <div class="thumb"><a href="{{ picture.image.url }}"><img src="{{ result.object.pictures.all.0.image_thumb.url }}"></img></a></div>
 {% endif %}
 <a href="{{ result.object.get_absolute_url }}?highlight={{query}}">{{ result.object.title | highlight_all:query }}</a>
 (<a href="{{ result.object.lesson.get_absolute_url }}">{{ result.object.lesson.title | highlight_all:query }}</a>, 
@@ -67,7 +67,7 @@
       {% for object in your_likes %}
       <li>
 	{% if object.recipe.pictures.all.0 %}
-	<div class="thumb"><img src="{{ object.recipe.pictures.all.0.image.url }}"></img></div>
+	<div class="thumb"><a href="{{ picture.image.url }}"><img src="{{ object.recipe.pictures.all.0.image_thumb.url }}"></img></a></div>
 	{% endif %}
 	<p>
 
@@ -113,7 +113,7 @@
       {% for object in recent_lessons %}
       {% for recipe in object.recipes.all %}
       {% for picture in recipe.pictures.all %}
-      <div class="thumb"><img src="{{ picture.image.url }}" /></div>
+      <div class="thumb"><a href="{{ picture.image.url }}"><img src="{{ picture.image_thumb.url }}" /></a></div>
       {% endfor %}
       {% endfor %}
       <li>

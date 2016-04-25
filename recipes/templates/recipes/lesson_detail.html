@@ -24,7 +24,7 @@
       <div class="recipes">
 {% for recipe in recipes %}
   {% for picture in recipe.pictures.all %}
-<img class="foto-small" src="{{ picture.image.url }}" />
+<a href="{{picture.image.url}}"><img class="foto-small" src="{{ picture.image_small.url }}" /></a>
   {% endfor %}
 <h2><a href="{{recipe.get_absolute_url}}">{{recipe.title}}</a></h2>
 <p>{{recipe.ingredients}}<p>
