@@ -67,7 +67,7 @@
       {% for object in your_likes %}
       <li>
 	{% if object.recipe.pictures.all.0 %}
-	<div class="thumb"><a href="{{ picture.image.url }}"><img src="{{ object.recipe.pictures.all.0.image_thumb.url }}"></img></a></div>
+	<div class="thumb"><a href="{{ object.recipe.pictures.all.0.image.url }}"><img src="{{ object.recipe.pictures.all.0.image_thumb.url }}"></img></a></div>
 	{% endif %}
 	<p>
 
