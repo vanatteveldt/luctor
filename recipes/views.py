@@ -16,12 +16,21 @@ from django.core.files.base import ContentFile
 
 from haystack.utils import Highlighter
 import os
+import json
 import markdown2
 from django.views.generic.base import RedirectView
 from .upload import process_file, get_recipes
 from django.contrib.auth.decorators import user_passes_test
 from PIL import Image
 from io import BytesIO
+
+def autocomplete_names():
+    namen = set()
+    for aanwezig in Lesson.objects.exclude(aanwezig__isnull=True).exclude(aanwezig__exact='').values_list("aanwezig", flat=True):
+        namen |= {x.strip() for x in aanwezig.split(",")}
+    return json.dumps(list(namen))
+
+
 class SearchView(LoginRequiredMixin, SearchView):
     """My custom search view."""
 
@@ -85,12 +94,8 @@ class LessonView(LoginRequiredMixin, DetailView):
         status_name = ["Ruw", "Ruwe tekst", "Titel en datum", "Ongeverifi\xeberd", "Geverifi\xeberd", "Gesplitst"][les.status]
 
         aanwezigform = ChangeAanwezigView().get_form_class()(instance=self.object)
-        import json
-        namen = set()
-        
-        for aanwezig in Lesson.objects.exclude(aanwezig__isnull=True).exclude(aanwezig__exact='').values_list("aanwezig", flat=True):
-            namen |= {x.strip() for x in aanwezig.split(",")}
-        aanwezig_autocomplete = json.dumps(list(namen))
+        aanwezig_autocomplete = autocomplete_names()
+
         ntotal = Lesson.objects.all().count()
         nchecked = Lesson.objects.filter(status = 4).count()
         
@@ -259,7 +264,7 @@ class UploadView(CreateView):
 
         
 class CheckView(UpdateView):
-    fields = ['title', 'date', 'parsed']
+    fields = ['title', 'date', 'parsed', 'aanwezig']
     model = Lesson
     template_name="recipes/check.html"
         
@@ -288,6 +293,7 @@ class CheckView(UpdateView):
         for recipe in recipes:            
             recipe.ingredient_rows = list(row.split("|") for row in recipe.ingredients.splitlines())
 
+        aanwezig_autocomplete = autocomplete_names()
         context.update(**locals())
         return context
 
