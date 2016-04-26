@@ -1,3 +1,5 @@
+{% load avatar_tags %}
+
 <html>
   <head>
     <link href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css"
@@ -51,6 +53,10 @@ table.ingredients {
     border-radius:50%;
 }
 
+.ingelogd img {
+border-radius:50%;
+margin-top: -7px;
+}
 .thumb {
     width:50px; height:50px;
     margin-right:5px;
@@ -108,7 +114,14 @@ img.foto-small {
 	  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
 	    
 	    <ul class="nav navbar-nav navbar-right">
-	      {% if user.is_authenticated %}<li><a href="{% url 'recipes:user-details' user.id %}">Ingelogd als: {{user.username}}</a></li> {% endif %}
+	      {% if user.is_authenticated %}
+	      <li class="ingelogd">
+		<a href="{% url 'recipes:user-details' user.id %}">
+		  {% avatar user 30 %}
+		  {{user.first_name}} {{user.last_name}}
+		</a>
+	      </li>
+	      {% endif %}
 	      {% if user.is_superuser %}<li><a href="{% url 'admin:index' %}">Sitebeheer</a></li> {% endif %}
 	      <li><a href="{% url 'logout' %}?next=/">Uitloggen</a></li> 
 	      

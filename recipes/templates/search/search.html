@@ -90,7 +90,7 @@
     <ul class='results comments'>
       {% for object in recent_comments %}
       <li>
-	<div class="image">{% avatar object.user 30 %}</div>
+	<div class="avatar">{% avatar object.user 30 %}</div>
 	<div>
 	  <p>
 	    <a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
@@ -98,7 +98,7 @@
 	    <a href="{{ object.recipe.lesson.docfile.url }}">{{ object.recipe.lesson.docfile.name|cut:'./'  }}</a>)<br/>
 	    {{ object.text }}
 	  </p>
-	  <span class="sub-text">door {{object.user}} op {{object.date}}</span>
+	  <span class="sub-text">door {{object.user.first_name}} op {{object.date}}</span>
 	</div>
       </li>
       {% endfor %}

@@ -65,7 +65,7 @@ class="btn btn-{% if picture.favourite %}success{%else%}default{% endif %}" aria
   <span class="glyphicon glyphicon-star{% if not picture.favourite %}-empty{% endif %}" aria-hidden="true"></span>
 </a>
 {% endif %}
-<span class="sub-text">{{picture.user}} op {{picture.date}}</span>
+<span class="sub-text">{{picture.user.first_name}} op {{picture.date}}</span>
 </div>
 </li>
 {% endfor %}
@@ -102,7 +102,7 @@ class="btn btn-{% if picture.favourite %}success{%else%}default{% endif %}" aria
 {% endif %}
 
 	</p>
-<span class="sub-text">geplaatst door {{comment.user}} op {{comment.date}}</span>
+<span class="sub-text">door {{comment.user.first_name}} op {{comment.date}}</span>
 	
       </div>
     </li>

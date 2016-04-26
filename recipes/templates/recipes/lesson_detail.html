@@ -23,10 +23,10 @@
     <div role="tabpanel" class="tab-pane active" id="recipes">
       <div class="recipes">
 {% for recipe in recipes %}
+<h2><a href="{{recipe.get_absolute_url}}">{{recipe.title}}</a></h2>
   {% for picture in recipe.pictures.all %}
 <a href="{{picture.image.url}}"><img class="foto-small" src="{{ picture.image_small.url }}" /></a>
   {% endfor %}
-<h2><a href="{{recipe.get_absolute_url}}">{{recipe.title}}</a></h2>
 <p>{{recipe.ingredients}}<p>
 <p>{{recipe.instructions}}<p>
 {% endfor %}
