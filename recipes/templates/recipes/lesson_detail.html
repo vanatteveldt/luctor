@@ -1,26 +1,53 @@
 {% extends "base.html" %}
 {% load admin_urls %}
+{% load widget_tweaks %}
+
+{% block head %}
+<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tokenfield/0.12.0/css/bootstrap-tokenfield.css" />
+{% endblock %}
+
+{% block foot %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tokenfield/0.12.0/bootstrap-tokenfield.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+  $('#aanwezig').tokenfield({
+  autocomplete: {
+    source: {{aanwezig_autocomplete|safe}},
+    delay: 100
+  },
+  showAutocompleteOnFocus: true
+})
+  });
+</script>
+{% endblock %}
+
+
 {% block content %}
 
 <h1>{{ object.title }}</h1>
 <p>  Status: {{status_name}} |
-  Date: {{ object.date }} | File: <a href="{{ object.docfile.url }}">{{ object.filename  }}</a>
+  Datum: {{ object.date }} | Oorspronkelijk bestand: <a href="{{ object.docfile.url }}">{{ object.docfile|cut:'./'  }}</a>
 
-  {% if user.is_superuser %}| <a href="{% url 'admin:recipes_lesson_change' object.id %}">Aanpassen</a> {% endif %}
+  {% if user.is_superuser %}| <a href="{% url 'admin:recipes_lesson_change' object.id %}">Recept aanpassen</a> {% endif %}
   {% if user.is_superuser and object.status == 3 %}| <a href="{% url 'recipes:lesson-detail' object.id %}?check=4">Goedkeuren</a> {% endif %}
 </p>
+{% if user.is_superuser %}
+<hr/>
+<form action="{% url 'recipes:lesson-aanwezig' object.id %}" method="POST">
+   {% csrf_token %}
+  <label for="{{ aanwezigform.aanwezig.id_for_label }}">Aanwezig:</label>
 
-<ul class="nav nav-tabs" role="tablist">
-  <li role="presentation" class="active"><a href="#recipes" aria-controls="home" role="tab" data-toggle="tab">Recepten</a></li>
-  <li role="presentation"><a href="#parsed" aria-controls="home" role="tab" data-toggle="tab">Parsed</a></li>
-  <li role="presentation"><a href="#raw" aria-controls="profile" role="tab" data-toggle="tab">Raw</a></li>
-  <li role="presentation"><a href="#original" aria-controls="profile" role="tab" data-toggle="tab">Original</a></li>
-
-</ul>
-<div>
-  <div class="tab-content">
-
-    <div role="tabpanel" class="tab-pane active" id="recipes">
+  <div class="input-group">
+    {% render_field aanwezigform.aanwezig class="form-control" placeholder="Type hier namen en klik op aanpassen" id="aanwezig" %}
+      <span class="input-group-btn">
+        <input type="submit" class="btn btn-secondary" value="Aanpassen">
+      </span>
+  </div>
+  </form>
+<hr/>
+{% else %}
+Aanwezig: {{object.aanwezig}}
+{% endif %}
       <div class="recipes">
 {% for recipe in recipes %}
 <h2><a href="{{recipe.get_absolute_url}}">{{recipe.title}}</a></h2>
@@ -33,31 +60,4 @@
       </div>
     </div>
 
-    <div role="tabpanel" class="tab-pane" id="parsed">
-      <div class="parsed">
-{{ parsed_html|safe }}
-      </div>
-    </div>
-
-    <div role="tabpanel" class="tab-pane" id="raw">
-      <div class="raw">
-	{{ text| safe }}
-      </div>
-    </div>
-    
-    <div role="tabpanel" class="tab-pane" id="original">
-      <div class="raw">
-<iframe height="800" style="width:100%" src="http://docs.google.com/gview?url=http://kookles.vanatteveldt.com{{ object.docfile.url }}&embedded=true"></iframe>
-      </div>
-    </div>
-    
-  </div>
-</div>
-<hr/>
-<p>  Status: {{status_name}} |
-  Date: {{ object.date }} | File: <a href="{{ object.docfile.url }}">{{ object.filename  }}</a>
-
-  {% if user.is_superuser %}| <a href="{% url 'admin:recipes_lesson_change' object.id %}">Aanpassen</a> {% endif %}
-  {% if user.is_superuser and object.status == 3 %}| <a href="{% url 'recipes:lesson-detail' object.id %}?check=4">Goedkeuren</a> {% endif %}
-</p>
 {% endblock %}

@@ -52,6 +52,16 @@ class FullTextHighlighter(Highlighter):
         return self.render_html(highlight_locations, 0, len(text_block))
 
         
+class ChangeAanwezigView(UpdateView):
+    model = Lesson
+    fields = ['aanwezig']
+    def form_valid(self, form):
+        names = form.instance.aanwezig.split(",")
+        names = {n.strip().title() for n in names}
+        form.instance.aanwezig = ",".join(sorted(names))
+        return super(ChangeAanwezigView, self).form_valid(form)
+
+    
 class LessonView(LoginRequiredMixin, DetailView):
 
     model = Lesson
@@ -74,6 +84,13 @@ class LessonView(LoginRequiredMixin, DetailView):
         recipes = les.recipes.all()
         status_name = ["Ruw", "Ruwe tekst", "Titel en datum", "Ongeverifi\xeberd", "Geverifi\xeberd", "Gesplitst"][les.status]
 
+        aanwezigform = ChangeAanwezigView().get_form_class()(instance=self.object)
+        import json
+        namen = set()
+        
+        for aanwezig in Lesson.objects.exclude(aanwezig__isnull=True).exclude(aanwezig__exact='').values_list("aanwezig", flat=True):
+            namen |= {x.strip() for x in aanwezig.split(",")}
+        aanwezig_autocomplete = json.dumps(list(namen))
         ntotal = Lesson.objects.all().count()
         nchecked = Lesson.objects.filter(status = 4).count()
         

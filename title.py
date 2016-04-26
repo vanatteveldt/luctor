@@ -42,21 +42,22 @@ def read_date(date):
         return datetime.date(d,m,j)
     raise Exception("Format not recognized")
 
-        
-for lesson in Lesson.objects.filter(status=1):
-    l = get_title_line(lesson)
-    try:
-        title, date = read_dateline(l)
-    except Exception as e:
-        lesson.status = 1
-        lesson.problems = "Cannot parse date: {date} ({e})".format(**locals())
-        lesson.save()
-        continue
+if __name__ == '__main__':
 
-    lesson.status=2
-    lesson.title = title
-    lesson.date = date
-    lesson.save()
-    
-    
-    #date2 = date.split("-")[-1]
+    for lesson in Lesson.objects.filter(status=1):
+        l = get_title_line(lesson)
+        try:
+            title, date = read_dateline(l)
+        except Exception as e:
+            lesson.status = 1
+            lesson.problems = "Cannot parse date: {date} ({e})".format(**locals())
+            lesson.save()
+            continue
+
+        lesson.status=2
+        lesson.title = title
+        lesson.date = date
+        lesson.save()
+
+
+        #date2 = date.split("-")[-1]

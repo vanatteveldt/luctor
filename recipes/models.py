@@ -15,7 +15,8 @@ class Lesson(models.Model):
     problems = models.TextField(null=True,blank=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     date = models.DateField(null=True, blank=True)
-
+    aanwezig = models.TextField(null=True,blank=True)
+    
     class Meta:
         ordering = ['date']
 
