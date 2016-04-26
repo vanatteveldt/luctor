@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+
+<form action="{% url 'recipes:user-details' object.id %}" method="post">
+  {% csrf_token %}
+
+  <div class="form-group">
+    <label for="form.username.id_for_label">Gebruikersnaam</label>
+    {% render_field form.username placeholder="Gebruikersnaam" class="form-control" %}
+  </div>
+  <div class="form-group">
+    <label for="form.first_name.id_for_label">Voornaam</label>
+    {% render_field form.first_name placeholder="Voornaam" class="form-control" %}
+  </div>
+  <div class="form-group">
+    <label for="form.last_name.id_for_label">Achternaam</label>
+    {% render_field form.last_name placeholder="Achternaam" class="form-control" %}
+  </div>
+  <div class="form-group">
+    <label for="form.email.id_for_label">Email</label>
+    {% render_field form.email placeholder="Email" class="form-control" %}
+  </div>
+
+
+
+  <button type="submit" class="btn btn-default">Gegevens Wijzigen</button>
+</form>
+
+<a class='btn btn-info' href="{% url 'password_change' %}">Wachtwoord wijzigen</a>
+
+{% endblock %}

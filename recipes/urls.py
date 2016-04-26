@@ -15,4 +15,5 @@ urlpatterns = [
     url(r'^upload$', staff_member_required(views.UploadView.as_view()), name='upload'),
     url(r'^check/(?P<pk>[-\w]+)/$', staff_member_required(views.CheckView.as_view()), name='check'),
 
+    url('^user/(?P<pk>[-\w]+)/$', views.UserDetailView.as_view(), name='user-details'),
 ]

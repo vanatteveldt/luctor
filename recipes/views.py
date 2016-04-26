@@ -6,6 +6,7 @@ from django.views.generic.edit import UpdateView, CreateView, FormView, FormMixi
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.shortcuts import redirect
 from django import forms
+from django.contrib.auth.models import User
 import logging
 from recipes.models import Lesson, Recipe, Comment, Like, Picture
 from recipes.search_indexes import RecipeIndex
@@ -272,3 +273,11 @@ class CheckView(UpdateView):
 
         context.update(**locals())
         return context
+
+class UserDetailView(UpdateView):
+    model = User
+    fields = ['username', 'first_name', 'last_name', 'email']
+
+    def form_valid(self, form):
+        self.object = form.save()
+        return redirect('recipes:user-details', pk=self.object.id)
