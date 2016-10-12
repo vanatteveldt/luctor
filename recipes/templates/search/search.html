@@ -74,9 +74,11 @@
 	<p>
 
 	  <a class="recipe" href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
-	  (<a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
+	  <br/>
+	  <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
 	  </a>
-	  <a class="lesson" href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>)<br/>
+	  <a class="lesson" href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
+	  <br/>
 
 	  {{ object.recipe.instructions|truncatechars:150 }} 
 	  <span class="sub-text">{{object.date}}</span>
@@ -98,9 +100,11 @@
 	<div>
 	  <p>
 	    <a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
-	    (<a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
+	    <br/>
+	    <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
 	    </a>
-	    <a class="lesson" href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>)<br/>
+	    <a class="lesson" href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
+	    <br/>
 
 	    {{ object.text }}
 	  </p>
@@ -116,18 +120,21 @@
     
     <h3>Nieuwe kooklessen</h3>
     <ul class='results'>
-      <li>
       {% for object in recent_lessons %}
-      {% for recipe in object.recipes.all %}
-      {% for picture in recipe.pictures.all %}
-      <div class="thumb2"><a href="{{ recipe.get_absolute_url }}"><img src="{{ picture.image_thumb.url }}" /></a></div>
-      {% endfor %}
-      {% endfor %}<br/>
-	<a class="lesson" href="{{ object.lesson.docfile.url }}">
+      <li>
+	{% if object.has_picture %}
+	{% for recipe in object.recipes.all %}
+	{% for picture in recipe.pictures.all %}
+	<div class="thumb2"><a href="{{ recipe.get_absolute_url }}"><img src="{{ picture.image_thumb.url }}" /></a></div>
+	{% endfor %}
+	{% endfor %}
+	<br/>
+	{% endif %}
+	<a class="lesson" href="{{ object.docfile.url }}">
 	      <span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
 	      </a>
 	<a class="lesson" href="{{ object.get_absolute_url }}?highlight={{query}}">{{ object.title }}</a>
-
+	  <span class="sub-text">{{object.date | date}}</span>
 	<br/>
 	{% for recipe in object.recipes.all %}
 	<a class="recipe" href="{{recipe.get_absolute_url}}">{{recipe.title}}</a>

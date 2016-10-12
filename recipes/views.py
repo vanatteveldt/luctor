@@ -22,6 +22,7 @@ import hashlib
 import markdown2
 from django.views.generic.base import RedirectView
 from .upload import process_file, get_recipes
+from recipes import thumbnails
 from PIL import Image
 from io import BytesIO
 from itertools import islice
@@ -87,6 +88,8 @@ class SearchView(LoginRequiredMixin, SearchView):
         #other_likes = Like.objects.exclude(user=self.request.user).order_by('-date')[:10]
         recent_lessons = islice(recent_user_lessons(self.request.user), 10)
         recent_comments =  islice(recent_user_comments(self.request.user), 10)
+        for l in recent_lessons:
+            l.has_picture = l.recipes.filter(pictures__isnull=False).exists()
         context.update(**locals())
         return context
 
@@ -211,7 +214,7 @@ class AddPictureView(CreateView):
         form.instance.recipe_id = self.kwargs['pk']
 
         res = super(AddPictureView, self).form_valid(form)
-        thumbnails.set_thubmnails(self.object)
+        thumbnails.set_thumbnails(self.object)
         return res
         
     def form_invalid(self, form):
