@@ -6,10 +6,11 @@
 
 <form action="{% url 'recipes:user-details' object.id %}" method="post">
   {% csrf_token %}
-
   <div class="form-group">
     <label for="form.username.id_for_label">Gebruikersnaam</label>
-    {% render_field form.username placeholder="Gebruikersnaam" class="form-control" %}
+    <input class="form-control" id="username" name="username" value="{{ view.request.user.username}}" disabled />
+
+    
   </div>
   <div class="form-group">
     <label for="form.first_name.id_for_label">Voornaam</label>

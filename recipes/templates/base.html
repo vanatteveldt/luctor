@@ -118,7 +118,9 @@ img.foto-small {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
 	  </button>
+	  {% if user.is_authenticated %}
 	  <a class="navbar-brand" href="/">Zoeken</a>
+	  {% endif %}
 	</div>
 	
 	<!-- Collect the nav links, forms, and other content for toggling -->
@@ -143,7 +145,12 @@ img.foto-small {
 	      </li>
 	      {% endif %}
 	      {% if user.is_superuser %}<li><a href="{% url 'admin:index' %}">Sitebeheer</a></li> {% endif %}
-	      <li><a href="{% url 'logout' %}?next=/">Uitloggen</a></li> 
+	      {% if user.is_authenticated %}
+	      <li><a href="{% url 'logout' %}?next=/">Uitloggen</a></li>
+	      {% else %}
+	      <li><a href="{% url 'login' %}?next=/">Inloggen</a></li>
+	      {% endif %}
+	      
 	      
 	    </ul>
 	    

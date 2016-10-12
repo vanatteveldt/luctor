@@ -16,13 +16,16 @@ from django.core.files.base import ContentFile
 
 from haystack.utils import Highlighter
 import os
+import re
 import json
+import hashlib
 import markdown2
 from django.views.generic.base import RedirectView
 from .upload import process_file, get_recipes
 from PIL import Image
 from io import BytesIO
 from itertools import islice
+from django.conf import settings
 
 def autocomplete_names():
     namen = set()
@@ -44,6 +47,25 @@ def all_user_recipes(user):
     for l in Lesson.objects.all():
         if l.can_view(user):
             yield from l.recipes.values_list("pk", flat=True)
+
+def get_hash(user_id, lesson_id):
+    h = hashlib.sha1()
+    h.update(settings.SECRET_KEY.encode("utf-8"))
+    h.update(bytes(int(user_id)))
+    h.update(bytes(int(lesson_id)))
+    return  h.hexdigest()
+            
+def get_share_key(user_id, lesson_id):
+    hash = get_hash(user_id, lesson_id)
+    return "{user_id}-{lesson_id}-{hash}".format(**locals())
+
+def check_share_key(key):
+    m = re.match(r"(\d+)-(\d+)-(.*)", key)
+    if not m:
+        return False
+    user_id, lesson_id, hash = m.groups()
+    check_hash = get_hash(user_id, lesson_id)
+    return hash == check_hash
 
 class SearchView(LoginRequiredMixin, SearchView):
     """My custom search view."""
@@ -215,6 +237,9 @@ class RecipeView(UserPassesTestMixin, DetailView):
 
 
     def test_func(self):
+        share =self.request.GET.get('share')
+        if share and check_share_key(share):
+            return True
         return self.get_object().lesson.can_view(self.request.user)
     
     def post(self, request, *args, **kwargs):
@@ -230,10 +255,19 @@ class RecipeView(UserPassesTestMixin, DetailView):
             form.save()
         return self.get(request, *args, **kwargs)
 
+    def get(self, *args, **kwargs):
+        if 'share' not in self.request.GET and self.request.user.is_authenticated:
+            params = self.request.GET.copy()
+            params['share'] = get_share_key(self.request.user.id, int(self.kwargs['pk']))
+            url = "{}?{}".format(self.request.path, params.urlencode())
+            return redirect(url)
+
+        return super().get(*args, **kwargs)
+    
     def get_context_data(self, **kwargs):
         context = super(RecipeView, self).get_context_data(**kwargs)
         recept = context['object']
-        
+        can_view_lesson = recept.lesson.can_view(self.request.user)
         like = self.request.GET.get('like')
         if like is not None:
             exists = Like.objects.filter(recipe=recept, user=self.request.user).exists()
@@ -322,8 +356,8 @@ class CheckView(UpdateView):
 
 class UserDetailView(UserPassesTestMixin, UpdateView):
     model = User
-    fields = ['username', 'first_name', 'last_name', 'email']
-
+    fields = ['first_name', 'last_name', 'email']
+    
     def test_func(self):
         return self.request.user.is_superuser or self.request.user.id == self.get_object().id
     
