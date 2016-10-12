@@ -135,7 +135,10 @@ img.foto-small {
 	      <li class="ingelogd">
 		<a href="{% url 'recipes:user-details' user.id %}">
 		  {% avatar user 30 %}
-		  {{user.first_name}} {{user.last_name}}
+		  {% if not user.last_name %}
+		  {{user.username}}
+		  {% else %}{{user.first_name}} {{user.last_name}}
+		  {% endif %}
 		</a>
 	      </li>
 	      {% endif %}

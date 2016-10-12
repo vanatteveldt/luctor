@@ -22,7 +22,15 @@ class Lesson(models.Model):
 
     def get_absolute_url(self):
         return reverse('recipes:lesson-detail', args=[str(self.id)])
-        
+
+    @property
+    def aanwezige_namen(self):
+        if not self.aanwezig: return []
+        return [x.strip().lower() for x in self.aanwezig.split(",")]
+
+    def can_view(self, user):
+        return user.is_superuser or (user.username.lower() in self.aanwezige_namen)
+    
 class Recipe(models.Model):
     title = models.CharField(max_length=200)
     lesson = models.ForeignKey(Lesson, related_name="recipes")
@@ -37,6 +45,7 @@ class Recipe(models.Model):
     @property
     def lesson_title(self):
         return self.lesson.title
+
         
     def __str__(self):
         return self.title

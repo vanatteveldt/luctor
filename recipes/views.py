@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView, FormView, FormMixin
@@ -20,9 +20,9 @@ import json
 import markdown2
 from django.views.generic.base import RedirectView
 from .upload import process_file, get_recipes
-from django.contrib.auth.decorators import user_passes_test
 from PIL import Image
 from io import BytesIO
+from itertools import islice
 
 def autocomplete_names():
     namen = set()
@@ -30,6 +30,20 @@ def autocomplete_names():
         namen |= {x.strip() for x in aanwezig.split(",")}
     return json.dumps(list(namen))
 
+def recent_user_lessons(user):
+    for l in Lesson.objects.order_by('-date'):
+        if l.can_view(user):
+            yield l
+    
+def recent_user_comments(user):
+    for c in Comment.objects.order_by('-date'):
+        if c.recipe.lesson.can_view(user):
+            yield c
+    
+def all_user_recipes(user):
+    for l in Lesson.objects.all():
+        if l.can_view(user):
+            yield from l.recipes.values_list("pk", flat=True)
 
 class SearchView(LoginRequiredMixin, SearchView):
     """My custom search view."""
@@ -39,19 +53,22 @@ class SearchView(LoginRequiredMixin, SearchView):
     def get_queryset(self):
         queryset = super(SearchView, self).get_queryset()
         # further filter queryset based on some set of criteria
+        if not self.request.user.is_superuser:
+            # This is *not* a very nice way to do this...
+            ids = list(all_user_recipes(self.request.user))
+            queryset = queryset.filter(id__in=ids)
         return queryset
 
     def get_context_data(self, *args, **kwargs):
         context = super(SearchView, self).get_context_data(*args, **kwargs)
-        
-        
         your_likes = Like.objects.filter(user=self.request.user).order_by('-date')[:10]
-        other_likes = Like.objects.exclude(user=self.request.user).order_by('-date')[:10]
-        recent_lessons = Lesson.objects.order_by('-date')[:10]
-        recent_comments = Comment.objects.order_by('-date')[:10]
+        #other_likes = Like.objects.exclude(user=self.request.user).order_by('-date')[:10]
+        recent_lessons = islice(recent_user_lessons(self.request.user), 10)
+        recent_comments =  islice(recent_user_comments(self.request.user), 10)
         context.update(**locals())
         return context
-        
+
+                                  
 
 class FullTextHighlighter(Highlighter):
     max_length = 20000000
@@ -60,7 +77,6 @@ class FullTextHighlighter(Highlighter):
         highlight_locations = self.find_highlightable_words()
         return self.render_html(highlight_locations, 0, len(text_block))
 
-        
 class ChangeAanwezigView(UpdateView):
     model = Lesson
     fields = ['aanwezig']
@@ -70,10 +86,13 @@ class ChangeAanwezigView(UpdateView):
         form.instance.aanwezig = ",".join(sorted(names))
         return super(ChangeAanwezigView, self).form_valid(form)
 
-    
-class LessonView(LoginRequiredMixin, DetailView):
+                                  
+class LessonView(UserPassesTestMixin, DetailView):
 
     model = Lesson
+
+    def test_func(self):
+        return self.get_object().can_view(self.request.user)
 
     def get(self, request, *args, **kwargs):
         check = request.GET.get('check')
@@ -189,11 +208,15 @@ class CommentForm(forms.ModelForm):
         image = cleaned_data.get("image")
         if not (text or image):
             raise forms.ValidationError("No comment or image provided!")
-            
-class RecipeView(LoginRequiredMixin, DetailView):
+
+class RecipeView(UserPassesTestMixin, DetailView):
     model = Recipe
     form_class = CommentForm
 
+
+    def test_func(self):
+        return self.get_object().lesson.can_view(self.request.user)
+    
     def post(self, request, *args, **kwargs):
 
         form_kwargs = {
@@ -297,10 +320,13 @@ class CheckView(UpdateView):
         context.update(**locals())
         return context
 
-class UserDetailView(UpdateView):
+class UserDetailView(UserPassesTestMixin, UpdateView):
     model = User
     fields = ['username', 'first_name', 'last_name', 'email']
 
+    def test_func(self):
+        return self.request.user.is_superuser or self.request.user.id == self.get_object().id
+    
     def form_valid(self, form):
         self.object = form.save()
         return redirect('recipes:user-details', pk=self.object.id)
