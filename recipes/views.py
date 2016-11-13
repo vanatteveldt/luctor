@@ -86,8 +86,8 @@ class SearchView(LoginRequiredMixin, SearchView):
         context = super(SearchView, self).get_context_data(*args, **kwargs)
         your_likes = Like.objects.filter(user=self.request.user).order_by('-date')[:10]
         #other_likes = Like.objects.exclude(user=self.request.user).order_by('-date')[:10]
-        recent_lessons = islice(recent_user_lessons(self.request.user), 10)
-        recent_comments =  islice(recent_user_comments(self.request.user), 10)
+        recent_lessons = list(islice(recent_user_lessons(self.request.user), 10))
+        recent_comments =  list(islice(recent_user_comments(self.request.user), 10))
         for l in recent_lessons:
             l.has_picture = l.recipes.filter(pictures__isnull=False).exists()
         context.update(**locals())

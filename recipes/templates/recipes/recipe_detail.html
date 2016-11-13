@@ -14,9 +14,23 @@
 
     <script type="text/javascript">
       $(document).ready(function() {
-        $("#lightSlider").lightSlider({autoWidth:true}); 
+      $("#lightSlider").lightSlider({item: 4, autowidth: true,
+				     responsive : [{
+					 breakpoint:1200,
+					 settings: {
+					     item:3,
+					     slideMove:1,
+					     slideMargin:6
+					 }
+				     }, {
+					 breakpoint:900,
+					 settings: {
+					     item:2,
+					     slideMove:1
+					 }
+				     }]
+				    });
       });
-
     </script>
 {% endblock %}
 
