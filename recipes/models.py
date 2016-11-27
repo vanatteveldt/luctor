@@ -2,6 +2,8 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
+import logging
+
 _PARSE_HELP = ("Pas hier de opdeling van de kookles in recepten aan. "
                "De titel van elk recept wordt aangegeven met ## titel, en ingredienten met | ingredient |. "
                "Als je klaar bent klik dan op 'save and continue editing' en op 'view on site'")
@@ -16,6 +18,9 @@ class Lesson(models.Model):
     title = models.CharField(max_length=255, null=True, blank=True)
     date = models.DateField(null=True, blank=True)
     aanwezig = models.TextField(null=True,blank=True)
+
+    def __str__(self):
+        return self.title
     
     class Meta:
         ordering = ['date']
@@ -82,3 +87,13 @@ class Like(models.Model):
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
     class Meta:
         unique_together = ('recipe', 'user')
+
+
+
+from django.contrib.auth.signals import user_logged_in
+
+
+def log_login(sender, user, request, **kwargs):
+    logging.info("[LOGIN] User {user} logged in".format(**locals()))
+
+user_logged_in.connect(log_login)

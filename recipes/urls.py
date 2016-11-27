@@ -16,5 +16,6 @@ urlpatterns = [
     url(r'^check/(?P<pk>[-\w]+)/$', staff_member_required(views.CheckView.as_view()), name='check'),
 
     url('^user/(?P<pk>[-\w]+)/$', views.UserDetailView.as_view(), name='user-details'),
+    url('^user/$', views.UserDetailView.as_view(), name='my-details'),
     url(r'^les/(?P<pk>[-\w]+)/aanwezig$', staff_member_required(views.ChangeAanwezigView.as_view()), name='lesson-aanwezig'),
 ]

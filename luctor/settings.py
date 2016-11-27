@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+LOGIN_REDIRECT_URL='/user/'
+
 # Paths to store database and uploaded files
 # for production, should move uploads somewhere suitable for serving
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -24,6 +26,7 @@ MEDIA_URL = "/media/"
 SECRET_KEY = '-z$%!6hq(wt@4r%l3qp7!5fl776*-mk_qi43m%(c=x&m6$c=(h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+ALLOWED_HOSTS = ['kookboot.com', 'kookles.vanatteveldt.com', 'localhost']
 DEBUG = True
 
 TEMPLATES = [
@@ -48,9 +51,13 @@ TEMPLATES = [
         },
     },
 ]
-
-
-ALLOWED_HOSTS = []
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST      = 'smtp.gmail.com'
+EMAIL_HOST_PASSWORD =  'vrnmbdhomztljcbk'#os.environ['GMAIL_PASSWORD'].strip()
+EMAIL_HOST_USER = 'vanatteveldt@gmail.com'
+EMAIL_PORT      = 587
+EMAIL_USE_TLS   = True
+DEFAULT_FROM_EMAIL  = 'vanatteveldt@gmail.com'
 
 LOGIN_URL = "login"
 
@@ -134,3 +141,19 @@ STATIC_URL = '/static/'
 DATE_FORMAT = 'j F Y'
 
 LANGUAGE_CODE = 'nl-NL'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}

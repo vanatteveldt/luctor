@@ -13,13 +13,15 @@ urlpatterns = [
     # url(r'^blog/', include('blog.urls')),
     #url('^', include('django.contrib.auth.urls')),
 
-
-    url('^login/$', auth_views.login, name="login"),
-    url('^logout/$', auth_views.logout, name="logout"),
-    url('^password_reset/$', auth_views.password_reset, name="password_reset"),
-    url('^password_change/$', auth_views.password_change, name="password_change"),
+    url('^', include('django.contrib.auth.urls')),
+    
+    #url('^login/$', auth_views.login, name="login"),
+    #url('^logout/$', auth_views.logout, name="logout"),
+    #url('^password_reset/$', auth_views.password_reset, name="password_reset"),
+    #url('^password_reset/done/$, [name='password_reset_done']
+    #url('^password_change/$', auth_views.password_change, name="password_change"),
                        
-    url('^password_change/done/$', RedirectView.as_view(url='/'), name='password_change_done'),
+    #url('^password_change/done/$', RedirectView.as_view(url='/'), name='password_change_done'),
     url(r'^avatar/', include('avatar.urls')),
     url(r'^', include('recipes.urls', namespace='recipes')),
     url(r'^admin/', include(admin.site.urls)),

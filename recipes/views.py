@@ -367,3 +367,11 @@ class UserDetailView(UserPassesTestMixin, UpdateView):
     def form_valid(self, form):
         self.object = form.save()
         return redirect('recipes:user-details', pk=self.object.id)
+
+    def get_object(self):
+        if 'pk' not in self.kwargs:
+            self.kwargs['pk'] = self.request.user.pk
+        return super().get_object()
+
+
+                
