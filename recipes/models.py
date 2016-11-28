@@ -3,6 +3,8 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 import logging
+from ipware.ip import get_ip
+auth_log = logging.getLogger('luctor.auth')
 
 _PARSE_HELP = ("Pas hier de opdeling van de kookles in recepten aan. "
                "De titel van elk recept wordt aangegeven met ## titel, en ingredienten met | ingredient |. "
@@ -94,6 +96,7 @@ from django.contrib.auth.signals import user_logged_in
 
 
 def log_login(sender, user, request, **kwargs):
-    logging.info("[LOGIN] User {user} logged in".format(**locals()))
-
+    ip = get_ip(request)
+    auth_log.info("[{ip}] LOGIN USER {user}".format(**locals()))
+    
 user_logged_in.connect(log_login)

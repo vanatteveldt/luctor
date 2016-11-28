@@ -30,7 +30,7 @@ from django.conf import settings
 
 from ipware.ip import get_ip
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('luctor.views')
 
 def autocomplete_names():
     namen = set()
@@ -264,10 +264,10 @@ class RecipeView(UserPassesTestMixin, DetailView):
         return self.get(request, *args, **kwargs)
 
     def _log_recipe_access(self):
-        u, r = self.request.user, self.object
-        ip = get_ip(request)
-        if u.is_authenticated:
-            log.info("[{ip}] USER {u.username} ACCESS {r.pk}:{r.title}".format(**locals()))
+        r = Recipe.objects.get(pk=self.kwargs['pk'])
+        ip = get_ip(self.request)
+        if self.request.user.is_authenticated():
+            log.info("[{ip}] USER {self.request.user.username} ACCESS {r.pk}:{r.title}".format(**locals()))
         else:
             share =self.request.GET.get('share')
             share_userid = share.split("-")[0]
@@ -276,7 +276,7 @@ class RecipeView(UserPassesTestMixin, DetailView):
             except User.DoesNotExist:
                 share_user = "?"
 
-            log.info("[{ip}] USER None SHARED BY {share_userid}:{share_user} ACCESS {r.pk}:{r.title}"
+            log.info("[{ip}] ANONYMOUS ACCESS SHARED-BY {share_userid}:{share_user} TO {r.pk}:{r.title}"
                      .format(**locals()))
             
     def get(self, *args, **kwargs):
