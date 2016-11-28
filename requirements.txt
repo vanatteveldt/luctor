@@ -5,3 +5,4 @@ markdown2
 django-avatar
 django-widget_tweaks
 elasticsearch
+django-ipware

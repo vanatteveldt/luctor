@@ -28,6 +28,10 @@ from io import BytesIO
 from itertools import islice
 from django.conf import settings
 
+from ipware.ip import get_ip
+
+log = logging.getLogger(__name__)
+
 def autocomplete_names():
     namen = set()
     for aanwezig in Lesson.objects.exclude(aanwezig__isnull=True).exclude(aanwezig__exact='').values_list("aanwezig", flat=True):
@@ -234,6 +238,7 @@ class CommentForm(forms.ModelForm):
         if not (text or image):
             raise forms.ValidationError("No comment or image provided!")
 
+        
 class RecipeView(UserPassesTestMixin, DetailView):
     model = Recipe
     form_class = CommentForm
@@ -258,7 +263,24 @@ class RecipeView(UserPassesTestMixin, DetailView):
             form.save()
         return self.get(request, *args, **kwargs)
 
+    def _log_recipe_access(self):
+        u, r = self.request.user, self.object
+        ip = get_ip(request)
+        if u.is_authenticated:
+            log.info("[{ip}] USER {u.username} ACCESS {r.pk}:{r.title}".format(**locals()))
+        else:
+            share =self.request.GET.get('share')
+            share_userid = share.split("-")[0]
+            try:
+                share_user = User.objects.get(pk=share_userid).username
+            except User.DoesNotExist:
+                share_user = "?"
+
+            log.info("[{ip}] USER None SHARED BY {share_userid}:{share_user} ACCESS {r.pk}:{r.title}"
+                     .format(**locals()))
+            
     def get(self, *args, **kwargs):
+        self._log_recipe_access()
         if 'share' not in self.request.GET and self.request.user.is_authenticated:
             params = self.request.GET.copy()
             params['share'] = get_share_key(self.request.user.id, int(self.kwargs['pk']))

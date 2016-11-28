@@ -27,7 +27,7 @@ SECRET_KEY = '-z$%!6hq(wt@4r%l3qp7!5fl776*-mk_qi43m%(c=x&m6$c=(h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 ALLOWED_HOSTS = ['kookboot.com', 'kookles.vanatteveldt.com', 'localhost']
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'N') == 'Y'
 
 TEMPLATES = [
     {
@@ -144,27 +144,42 @@ LANGUAGE_CODE = 'nl-NL'
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/luctor/luctor.log',
+            'formatter': 'verbose',
         },
     },
-    'loggers': {
+    'formatters': {
+        'verbose': {
+            'format': '[%(asctime)s %(module)s %(levelname)s] %(message)s'
+        },
+    },
+}
+
+if DEBUG:
+    LOGGING['loggers'] = {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    }
+
+else:
+    LOGGING['handlers']['file'] = {
+        'class': 'logging.FileHandler',
+        'filename': '/var/log/luctor/luctor.log',
+        'formatter': 'verbose',
+    }
+    LOGGING['loggers'] = {
         '': {
             'handlers': ['console'],
             'level': 'INFO',
         },
-    },
-    'loggers': {
         'luctor': {
             'handlers': ['file'],
             'level': 'INFO',
         },
-    },
+    }
     
-}
