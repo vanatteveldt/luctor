@@ -149,6 +149,10 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
         },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/luctor/luctor.log',
+        },
     },
     'loggers': {
         '': {
@@ -156,4 +160,11 @@ LOGGING = {
             'level': 'INFO',
         },
     },
+    'loggers': {
+        'luctor': {
+            'handlers': ['file'],
+            'level': 'INFO',
+        },
+    },
+    
 }
