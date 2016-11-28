@@ -280,13 +280,12 @@ class RecipeView(UserPassesTestMixin, DetailView):
                      .format(**locals()))
             
     def get(self, *args, **kwargs):
-        self._log_recipe_access()
         if 'share' not in self.request.GET and self.request.user.is_authenticated:
             params = self.request.GET.copy()
             params['share'] = get_share_key(self.request.user.id, int(self.kwargs['pk']))
             url = "{}?{}".format(self.request.path, params.urlencode())
             return redirect(url)
-
+        self._log_recipe_access()
         return super().get(*args, **kwargs)
     
     def get_context_data(self, **kwargs):
