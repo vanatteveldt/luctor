@@ -72,7 +72,7 @@ def parse_recipe(text):
     recipes = []
     for i, line in enumerate(lines):
         in_ingredients = bool(recipes and not recipes[-1].text)
-        line = line.strip()
+        line = line.replace("\ufeff", "").strip()
         if not line: continue
         if title is None:
             # first line is title

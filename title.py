@@ -17,7 +17,7 @@ def read_dateline(dateline):
     elif "   " in dateline:
         title, date = dateline.split("   ", 1)
     else:
-        raise Exception("Could not parse {dateline}".format(**locals()))
+        raise Exception("Could not parse date: {dateline}".format(**locals()))
     title = title.strip()
     date = date.strip()
     date = read_date(date)

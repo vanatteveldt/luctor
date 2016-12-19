@@ -93,6 +93,7 @@ class Like(models.Model):
 
 
 from django.contrib.auth.signals import user_logged_in
+from django.db.models.signals import  pre_delete
 
 
 def log_login(sender, user, request, **kwargs):
@@ -100,3 +101,10 @@ def log_login(sender, user, request, **kwargs):
     auth_log.info("[{ip}] LOGIN USER {user}".format(**locals()))
     
 user_logged_in.connect(log_login)
+from django.dispatch import receiver
+from recipes.search_indexes import RecipeIndex
+
+@receiver(pre_delete, sender=Lesson)
+def lesson_pre_delete(sender, instance, **kwargs):
+    for recipe in instance.recipes.all():
+        RecipeIndex().remove_object(recipe)
