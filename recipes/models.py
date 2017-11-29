@@ -22,7 +22,7 @@ class Lesson(models.Model):
     aanwezig = models.TextField(null=True,blank=True)
 
     def __str__(self):
-        return self.title
+        return self.title or '(no title)'
     
     class Meta:
         ordering = ['date']

@@ -173,7 +173,7 @@ if DEBUG:
 else:
     LOGGING['handlers']['file'] = {
         'class': 'logging.FileHandler',
-        'filename': '/var/log/luctor/luctor.log',
+        'filename': 'luctor.log',
         'formatter': 'verbose',
     }
     LOGGING['loggers'] = {
