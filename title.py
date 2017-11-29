@@ -40,7 +40,7 @@ def read_date(date):
         j, m, d = [int(x) for x in match.groups()]
         
         return datetime.date(d,m,j)
-    raise Exception("Format not recognized")
+    raise Exception("Date format not recognized: {date!r}".format(**locals()))
 
 if __name__ == '__main__':
 
