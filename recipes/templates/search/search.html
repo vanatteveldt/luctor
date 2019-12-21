@@ -18,26 +18,28 @@
         </table>
     </form>
 
-        {% if query %}
-            <h3>Resultaten</h3>
-	    <ul class='results'>
+    {% if query %}
+        <h3>Resultaten</h3>
+        <ul class='results'>
             {% for result in object_list %}
                 <li>
-{% if result.object.pictures.all.0 %}
-	  <div class="thumb"><a href="{{ result.object.get_absolute_url }}"><img src="{{ result.object.pictures.all.0.image_thumb.url }}"></img></a></div>
-{% endif %}
-<a href="{{ result.object.get_absolute_url }}?highlight={{query}}">{{ result.object.title | highlight_all:query }}</a>
-(<a href="{{ result.object.lesson.docfile.url }}"><span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
-</a>
-<a href="{{ result.object.lesson.get_absolute_url }}">{{ result.object.lesson.title | highlight_all:query }}</a>)<br/>
+                    {% if result.object.pictures.all.0 %}
+                        <div class="thumb"><a href="{{ result.object.get_absolute_url }}"><img
+                                src="{{ result.object.pictures.all.0.image_thumb.url }}"></img></a></div>
+                    {% endif %}
+                    <a href="{{ result.object.get_absolute_url }}?highlight={{ query }}">{{ result.object.title | highlight_all:query }}</a>
+                    (<a href="{{ result.object.lesson.docfile.url }}"><span class="glyphicon glyphicon-file"
+                                                                            aria-hidden="true" title="Download"></span>
+                </a>
+                    <a href="{{ result.object.lesson.get_absolute_url }}">{{ result.object.lesson.title | highlight_all:query }}</a>)<br/>
 
-{% highlight result.object.full_text with query max_length 250 %} 
-<hr/>
-</li>
+                    {% highlight result.object.full_text with query max_length 250 %}
+                    <hr/>
+                </li>
             {% empty %}
                 <p>No results found.</p>
             {% endfor %}
-	    </ul>
+        </ul>
         {% if page_obj.has_previous %}
             <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}">previous</a> |
         {% endif %}
@@ -50,104 +52,124 @@
             | <a href="?q={{ query }}&page={{ page_obj.next_page_number }}">next</a>
         {% endif %}
 
-            {% if page.has_previous or page.has_next %}
-                <div>
-                    {% if page.has_previous %}<a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">{% endif %}&laquo; Previous{% if page.has_previous %}</a>{% endif %}
-                    |
-                    {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}Next &raquo;{% if page.has_next %}</a>{% endif %}
-                </div>
-            {% endif %}
-		{% else %} 
-<!-- no results, show favourites and new lessons -->
+        {% if page.has_previous or page.has_next %}
+            <div>
+                {% if page.has_previous %}
+                    <a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">{% endif %}&laquo; Previous
+                {% if page.has_previous %}</a>{% endif %}
+                |
+                {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}Next
+                &raquo;{% if page.has_next %}</a>{% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- no results, show favourites and new lessons -->
 
 
-<div class="row">
-  <div class="col-md-4">
+        <div class="row">
+            <div class="col-md-3">
 
-    <h3>Favorieten</h3>
-    <ul class='results'>
-      {% for object in your_likes %}
-      <li>
-	{% if object.recipe.pictures.all.0 %}
-	<div class="thumb"><a href="{{ object.recipe.get_absolute_url }}"><img src="{{ object.recipe.pictures.all.0.image_thumb.url }}"></img></a></div>
-	{% endif %}
-	<p>
+                <h3>Favorieten</h3>
+                <ul class='results'>
+                    {% for object in your_likes %}
+                        <li>
+                            <p>
 
-	  <a class="recipe" href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
-	  <br/>
-	  <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
-	  </a>
-	  <a class="lesson" href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
-	  <br/>
+                            <a href="{{object.get_absolute_url}}?toggle_like={{ object.pk }}">
+                            	<span class="glyphicon glyphicon-star{% if not object.favorite %}-empty{% endif %}" aria-hidden="true"></span>
+                            </a>
+                                <a class="recipe"
+                                   href="{{ object.recipe.get_absolute_url }}?highlight={{ query }}">{{ object.recipe.title }}</a>
+                                <br/>
+                                <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span
+                                        class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
+                                </a>
+                                <a class="lesson"
+                                   href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
+                                <br />
 
-	  {{ object.recipe.instructions|truncatechars:150 }} 
-	  <span class="sub-text">{{object.date}}</span>
-	  
-	</p>
+                            {% if object.recipe.pictures.all.0 %}
+                                <div class="thumb"><a href="{{ object.recipe.get_absolute_url }}"><img
+                                        src="{{ object.recipe.pictures.all.0.image_thumb.url }}"></img></a></div>
+                            {% endif %}
+                                {{ object.recipe.instructions|truncatechars:150 }}
+                                <span class="sub-text">{{ object.date }}</span>
 
-      </li>
-      {% endfor %}
-    </ul>
+                            </p>
 
-  </div>
-  <div class="col-md-4">
-    
-    <h3>Recente comments</h3>
-    <ul class='results comments'>
-      {% for object in recent_comments %}
-      <li>
-	<div class="avatar">{% avatar object.user 30 %}</div>
-	<div>
-	  <p>
-	    <a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
-	    <br/>
-	    <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
-	    </a>
-	    <a class="lesson" href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
-	    <br/>
+                        </li>
+                    {% endfor %}
+                </ul>
 
-	    {{ object.text }}
-	  </p>
-	  <span class="sub-text">door {{object.user.first_name}} op {{object.date}}</span>
-	</div>
-      </li>
-      {% endfor %}
-    </ul>
-    
-  </div>
-  <div class="col-md-4">
-    
-    
-    <h3>Nieuwe kooklessen</h3>
-    <ul class='results'>
-      {% for object in recent_lessons %}
-      <li>
-	{% if object.has_picture %}
-	{% for recipe in object.recipes.all %}
-	{% for picture in recipe.pictures.all %}
-	<div class="thumb2"><a href="{{ recipe.get_absolute_url }}"><img src="{{ picture.image_thumb.url }}" /></a></div>
-	{% endfor %}
-	{% endfor %}
-	<br/>
-	{% endif %}
-	<a class="lesson" href="{{ object.docfile.url }}">
-	      <span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
-	      </a>
-	<a class="lesson" href="{{ object.get_absolute_url }}?highlight={{query}}">{{ object.title }}</a>
-	  <span class="sub-text">{{object.date | date}}</span>
-	<br/>
-	{% for recipe in object.recipes.all %}
-	<a class="recipe" href="{{recipe.get_absolute_url}}">{{recipe.title}}</a>
-	{% if not forloop.last %}, {% endif %} {% endfor %}
-      </li>
-      {% endfor %}
-    </ul>
-    
+            </div>
+            <div class="col-md-4">
 
-    
-    
-  </div>
-<!--
+                <h3>Recent bekeken</h3>
+<ul class='results'>
+                    {% for object in your_recent %}
+                        <li>
+                            <p>
+
+                            <a href="{{object.get_absolute_url}}?toggle_like={{ object.pk }}">
+                            	<span class="glyphicon glyphicon-star{% if not object.favorite %}-empty{% endif %}" aria-hidden="true"></span>
+                            </a>
+                                <a class="recipe"
+                                   href="{{ object.recipe.get_absolute_url }}?highlight={{ query }}">{{ object.recipe.title }}</a>
+                                <br/>
+                                <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span
+                                        class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
+                                </a>
+                                <a class="lesson"
+                                   href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
+                                <br />
+
+                            {% if object.recipe.pictures.all.0 %}
+                                <div class="thumb"><a href="{{ object.recipe.get_absolute_url }}"><img
+                                        src="{{ object.recipe.pictures.all.0.image_thumb.url }}"></img></a></div>
+                            {% endif %}
+                                {{ object.recipe.instructions|truncatechars:150 }}
+                                <span class="sub-text">{{ object.date }}</span>
+
+                            </p>
+
+                        </li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+            <div class="col-md-4">
+
+
+                <h3>Nieuwe kooklessen</h3>
+                <ul class='results'>
+                    {% for object in recent_lessons %}
+                        <li>
+                            {% if object.has_picture %}
+                                {% for recipe in object.recipes.all %}
+                                    {% for picture in recipe.pictures.all %}
+                                        <div class="thumb2"><a href="{{ recipe.get_absolute_url }}"><img
+                                                src="{{ picture.image_thumb.url }}"/></a></div>
+                                    {% endfor %}
+                                {% endfor %}
+                                <br/>
+                            {% endif %}
+                            <a class="lesson" href="{{ object.docfile.url }}">
+                                <span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
+                            </a>
+                            <a class="lesson"
+                               href="{{ object.get_absolute_url }}?highlight={{ query }}">{{ object.title }}</a>
+                            <span class="sub-text">{{ object.date | date }}</span>
+                            <br/>
+                            {% for recipe in object.recipes.all %}
+                                <a class="recipe" href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>
+                                {% if not forloop.last %}, {% endif %} {% endfor %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+
+            </div>
+            <!--
   <div class="col-md-4">
 
 		<h3>Recente likes</h3>
@@ -169,9 +191,9 @@
 		</ul>
     </div>-->
 
-  </div> <!-- end row -->
+        </div> <!-- end row -->
 
 
-  
-		{% endif %}
+
+    {% endif %}
 {% endblock %}

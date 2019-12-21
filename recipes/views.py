@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
@@ -32,26 +34,31 @@ from ipware.ip import get_ip
 
 log = logging.getLogger('luctor.views')
 
+
 def autocomplete_names():
     namen = set()
     for aanwezig in Lesson.objects.exclude(aanwezig__isnull=True).exclude(aanwezig__exact='').values_list("aanwezig", flat=True):
         namen |= {x.strip() for x in aanwezig.split(",")}
     return json.dumps(list(namen))
 
+
 def recent_user_lessons(user):
     for l in Lesson.objects.order_by('-date'):
         if l.can_view(user):
             yield l
-    
+
+
 def recent_user_comments(user):
     for c in Comment.objects.order_by('-date'):
         if c.recipe.lesson.can_view(user):
             yield c
-    
+
+
 def all_user_recipes(user):
     for l in Lesson.objects.all():
         if l.can_view(user):
             yield from l.recipes.values_list("pk", flat=True)
+
 
 def get_hash(user_id, lesson_id):
     h = hashlib.sha1()
@@ -59,10 +66,12 @@ def get_hash(user_id, lesson_id):
     h.update(bytes(int(user_id)))
     h.update(bytes(int(lesson_id)))
     return  h.hexdigest()
-            
+
+
 def get_share_key(user_id, lesson_id):
     hash = get_hash(user_id, lesson_id)
     return "{user_id}-{lesson_id}-{hash}".format(**locals())
+
 
 def check_share_key(key):
     m = re.match(r"(\d+)-(\d+)-(.*)", key)
@@ -71,6 +80,7 @@ def check_share_key(key):
     user_id, lesson_id, hash = m.groups()
     check_hash = get_hash(user_id, lesson_id)
     return hash == check_hash
+
 
 class SearchView(LoginRequiredMixin, SearchView):
     """My custom search view."""
@@ -87,17 +97,22 @@ class SearchView(LoginRequiredMixin, SearchView):
         return queryset
 
     def get_context_data(self, *args, **kwargs):
+        if 'toggle_like' in self.request.GET:
+            like = Like.objects.get(pk=self.request.GET['toggle_like'])
+            like.favorite = not like.favorite
+            like.save()
+
         context = super(SearchView, self).get_context_data(*args, **kwargs)
-        your_likes = Like.objects.filter(user=self.request.user).order_by('-date')[:10]
+        your_likes = Like.objects.filter(user=self.request.user).filter(favorite=True).order_by('-date')[:10]
+        your_recent = Like.objects.filter(user=self.request.user).filter(favorite=False).order_by('-favorite', '-date')[:10]
         #other_likes = Like.objects.exclude(user=self.request.user).order_by('-date')[:10]
         recent_lessons = list(islice(recent_user_lessons(self.request.user), 10))
-        recent_comments =  list(islice(recent_user_comments(self.request.user), 10))
+        #recent_comments =  list(islice(recent_user_comments(self.request.user), 10))
         for l in recent_lessons:
             l.has_picture = l.recipes.filter(pictures__isnull=False).exists()
         context.update(**locals())
         return context
 
-                                  
 
 class FullTextHighlighter(Highlighter):
     max_length = 20000000
@@ -105,6 +120,7 @@ class FullTextHighlighter(Highlighter):
         self.text_block = strip_tags(text_block)
         highlight_locations = self.find_highlightable_words()
         return self.render_html(highlight_locations, 0, len(text_block))
+
 
 class ChangeAanwezigView(UpdateView):
     model = Lesson
@@ -117,7 +133,6 @@ class ChangeAanwezigView(UpdateView):
 
                                   
 class LessonView(UserPassesTestMixin, DetailView):
-
     model = Lesson
 
     def test_func(self):
@@ -164,7 +179,6 @@ class LessonView(UserPassesTestMixin, DetailView):
         context.update(**locals())
         return context
 
-    
 
 class CheckRedirectView(RedirectView):
     permanent = False
@@ -173,6 +187,7 @@ class CheckRedirectView(RedirectView):
         les = Lesson.objects.filter(status = 3).order_by("?")[0]
         return les.get_absolute_url()
         return super(ArticleCounterRedirectView, self).get_redirect_url(*args, **kwargs)
+
 
 class DeletePictureView(RedirectView):
     permanent = False
@@ -193,6 +208,7 @@ class LikePictureView(RedirectView):
         p.save()
         return p.recipe.get_absolute_url()
 
+
 def create_thumbnail(inf, size=300):
     im = Image.open(inf)
     im.thumbnail((size,size), Image.ANTIALIAS)
@@ -200,7 +216,8 @@ def create_thumbnail(inf, size=300):
     im.save(f, format='jpeg')
     bytes = f.getvalue()
     return bytes
-        
+
+
 def save_thumbnail(source_field, destination_field, size=300):
     inf = source_field.file.name
     fn = os.path.splitext(os.path.basename(inf))[0]
@@ -242,7 +259,6 @@ class CommentForm(forms.ModelForm):
 class RecipeView(UserPassesTestMixin, DetailView):
     model = Recipe
     form_class = CommentForm
-
 
     def test_func(self):
         share =self.request.GET.get('share')
@@ -293,26 +309,27 @@ class RecipeView(UserPassesTestMixin, DetailView):
         recept = context['object']
         can_view_lesson = recept.lesson.can_view(self.request.user)
         like = self.request.GET.get('like')
-        if like is not None:
-            exists = Like.objects.filter(recipe=recept, user=self.request.user).exists()
-            if (like == "1"):
-                if not exists:
-                    Like.objects.create(recipe=recept, user=self.request.user)
-            else:
-                if exists:
-                    Like.objects.filter(recipe=recept, user=self.request.user).delete()
-            
+        try:
+            l = Like.objects.get(recipe=recept, user=self.request.user)
+            if like is not None:
+                l.favorite = (like == "1")
+            l.date = datetime.now()
+            l.save()
+        except Like.DoesNotExist:
+            l = Like.objects.create(recipe=recept, user=self.request.user, favorite=(like == "1"))
+
         comments = recept.comments.all()
         
         ingredient_rows = list(row.split("|") for row in recept.ingredients.splitlines())
         highlight = self.request.GET.get('highlight')
-        isliked = recept.likes.filter(pk=self.request.user.pk).exists()
+        isliked = l.favorite
 
         commentform = CommentForm()
         pictureform = AddPictureView().get_form_class()()
         
         context.update(**locals())
         return context
+
 
 class UploadView(CreateView):
     template_name="recipes/upload.html"
@@ -365,8 +382,6 @@ class CheckView(UpdateView):
             return res
         elif actie == "refresh":
             return self.render_to_response(self.get_context_data())
-            
-    
 
     def get_context_data(self, **kwargs):
         context = super(CheckView, self).get_context_data(**kwargs)
@@ -377,6 +392,7 @@ class CheckView(UpdateView):
         aanwezig_autocomplete = autocomplete_names()
         context.update(**locals())
         return context
+
 
 class UserDetailView(UserPassesTestMixin, UpdateView):
     model = User

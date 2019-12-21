@@ -52,11 +52,11 @@ TEMPLATES = [
     },
 ]
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST      = 'smtp.gmail.com'
-EMAIL_HOST_PASSWORD =  'vrnmbdhomztljcbk'#os.environ['GMAIL_PASSWORD'].strip()
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_PASSWORD = 'vrnmbdhomztljcbk'#os.environ['GMAIL_PASSWORD'].strip()
 EMAIL_HOST_USER = 'vanatteveldt@gmail.com'
-EMAIL_PORT      = 587
-EMAIL_USE_TLS   = True
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL  = 'vanatteveldt@gmail.com'
 
 LOGIN_URL = "login"
@@ -140,7 +140,6 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(ROOT, 'static')
-
 
 DATE_FORMAT = 'j F Y'
 
