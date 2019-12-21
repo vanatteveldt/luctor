@@ -1,8 +1,8 @@
-Django
+Django>=1.9,<2.0
 whoosh
 git+git://github.com/django-haystack/django-haystack.git
 markdown2
 django-avatar
 django-widget_tweaks
-elasticsearch
+elasticsearch==5.5.3
 django-ipware
