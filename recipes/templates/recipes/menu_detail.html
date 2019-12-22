@@ -42,7 +42,7 @@
                href="{% url 'recipes:menu-recipe-move' object.pk mr.recipe.pk 'down'%}"><span class="glyphicon glyphicon-arrow-down"></span></a>
             <a style="padding:0px"  class="btn btn-sm {% if forloop.last %}disabled{% endif %} }}"
                href="{% url 'recipes:menu-recipe-remove' object.pk mr.recipe.pk %}"><span class="glyphicon glyphicon-trash"></span></a>
-             <a href="{{ mr.recipe.get_absolute_url }}">{{ mr.recipe.title }}</a>
+             <a href="{{ mr.recipe.get_absolute_url }}?share={{ mr.share_key }}">{{ mr.recipe.title }}</a>
         (uit: <a class="lesson" href="{{ mr.recipe.lesson.get_absolute_url }}">{{ mr.recipe.lesson }}</a>,
          <span class="sub-text">{{ mr.recipe.lesson.date | date }}</span>)
         </li>

@@ -1,11 +1,14 @@
 import re
 from collections import defaultdict
 
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.forms import ModelForm
+from django.shortcuts import redirect
 from django.views.generic import CreateView, DetailView, RedirectView
 
 from recipes.models import Menu, Recipe, MenuRecipe
+from recipes.auth import check_share_key, get_share_key
 
 
 class MenuForm(ModelForm):
@@ -97,9 +100,16 @@ def parse_ingredient(ing):
             return " ".join(quant), " ".join([part] + parts)
 
 
-
-class MenuDetailView(DetailView):
+class MenuDetailView(UserPassesTestMixin, DetailView):
     model = Menu
+
+    def get(self, *args, **kwargs):
+        if 'share' not in self.request.GET and self.request.user.is_authenticated:
+            params = self.request.GET.copy()
+            params['share'] = get_share_key(self.request.user.id, int(self.kwargs['pk']), is_menu=True)
+            url = f"{self.request.path}?{params.urlencode()}"
+            return redirect(url)
+        return super().get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ingredients = defaultdict(list)
@@ -114,11 +124,24 @@ class MenuDetailView(DetailView):
                 for ing in ingrow:
                     quant, ingredient = parse_ingredient(ing)
                     ingredients[ingredient].append(quant)
+
+            # get share key for recipes
+            share_user = self.share_user or self.request.user
+            if not share_user.is_authenticated:
+                raise Exception("User not authenticated (so why did they get this far?)")
+            recipe.share_key = get_share_key(share_user.id, recipe.recipe_id)
         ingredients = sorted((" + ".join(q), i) for (i, q) in ingredients.items())
         context.update(**locals())
         return context
 
+    def test_func(self):
+        share = self.request.GET.get('share')
+        if share:
+            self.share_user = check_share_key(share)
+            if not self.share_user:
+                return False
 
+        return self.get_object().can_view(self.request.user) or self.get_object().can_view(self.share_user)
 
 
 

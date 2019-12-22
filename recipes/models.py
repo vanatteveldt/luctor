@@ -125,6 +125,9 @@ class Menu(models.Model):
     def get_absolute_url(self):
         return reverse('recipes:menu-detail', args=[str(self.id)])
 
+    def can_view(self, user):
+        return user.is_superuser or user == self.user
+
 
 class MenuRecipe(models.Model):
     menu = models.ForeignKey(Menu)
