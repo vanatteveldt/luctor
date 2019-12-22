@@ -120,6 +120,10 @@ class Menu(models.Model):
     name = models.CharField(max_length=255)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="menus")
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
+    recipes = models.ManyToManyField(Recipe, through='MenuRecipe')
+
+    def get_absolute_url(self):
+        return reverse('recipes:menu-detail', args=[str(self.id)])
 
 
 class MenuRecipe(models.Model):
@@ -129,6 +133,7 @@ class MenuRecipe(models.Model):
 
     class Meta:
         unique_together = ('recipe', 'menu')
+        ordering = ['order']
 
 
 

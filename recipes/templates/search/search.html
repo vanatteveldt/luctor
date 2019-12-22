@@ -102,7 +102,7 @@
                 </ul>
 
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
 
                 <h3>Recent bekeken</h3>
 <ul class='results'>
@@ -137,7 +137,32 @@
                 </ul>
 
             </div>
-            <div class="col-md-4">
+        <div class="col-md-3">
+
+
+                <h3>Jouw Menu's</h3>
+                    <form  class="form-inline" action="{% url 'recipes:menu-add' %}" method="POST">
+                         {% csrf_token %}
+
+<div class="form-group">
+    <input class="form-control" name="name" placeholder="Menu Toevoegen">  </div>
+    <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true" title="Toevoegen"></span></button>
+                    </form>
+
+                <ul class='results'>
+                    {% for object in menus %}
+                        <li>
+                            <a class="lesson" href="{{ object.get_absolute_url }}">{{ object.name }}</a>
+                            <span class="sub-text">{{ object.date | date }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+
+            </div>
+
+
+            <div class="col-md-3">
 
 
                 <h3>Nieuwe kooklessen</h3>

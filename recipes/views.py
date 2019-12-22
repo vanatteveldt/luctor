@@ -10,7 +10,7 @@ from django.shortcuts import redirect
 from django import forms
 from django.contrib.auth.models import User
 import logging
-from recipes.models import Lesson, Recipe, Comment, Like, Picture
+from recipes.models import Lesson, Recipe, Comment, Like, Picture, Menu
 from recipes.search_indexes import RecipeIndex
 from haystack.generic_views import SearchView
 from haystack.forms import HighlightedSearchForm
@@ -23,6 +23,8 @@ import json
 import hashlib
 import markdown2
 from django.views.generic.base import RedirectView
+
+from .menu import MenuForm
 from .upload import process_file, get_recipes
 from recipes import thumbnails
 from PIL import Image
@@ -105,6 +107,8 @@ class SearchView(LoginRequiredMixin, SearchView):
         context = super(SearchView, self).get_context_data(*args, **kwargs)
         your_likes = Like.objects.filter(user=self.request.user).filter(favorite=True).order_by('-date')[:10]
         your_recent = Like.objects.filter(user=self.request.user).filter(favorite=False).order_by('-favorite', '-date')[:10]
+        menus = Menu.objects.filter(user=self.request.user).order_by('-date')[:10]
+        menu_form = MenuForm()
         #other_likes = Like.objects.exclude(user=self.request.user).order_by('-date')[:10]
         recent_lessons = list(islice(recent_user_lessons(self.request.user), 10))
         #recent_comments =  list(islice(recent_user_comments(self.request.user), 10))
@@ -326,7 +330,10 @@ class RecipeView(UserPassesTestMixin, DetailView):
 
         commentform = CommentForm()
         pictureform = AddPictureView().get_form_class()()
-        
+
+        menus = Menu.objects.filter(user=self.request.user)
+        current_menu = self.request.session.get('current_menu', -1)
+
         context.update(**locals())
         return context
 
@@ -411,4 +418,4 @@ class UserDetailView(UserPassesTestMixin, UpdateView):
         return super().get_object()
 
 
-                
+
