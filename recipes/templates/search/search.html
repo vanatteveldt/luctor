@@ -153,8 +153,12 @@
                     {% for object in menus %}
                         <li>
                             <a class="lesson" href="{{ object.get_absolute_url }}">{{ object.name }}</a>
-                            <span class="sub-text">{{ object.date | date }}</span>
+                            <span class="sub-text">{{ object.date | date }}</span><br/>
+                         {% for recipe in object.recipes.all %}
+                                <a class="recipe" href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>
+                                {% if not forloop.last %}, {% endif %} {% endfor %}
                         </li>
+
                     {% endfor %}
                 </ul>
 
