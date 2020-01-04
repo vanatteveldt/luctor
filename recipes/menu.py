@@ -122,8 +122,9 @@ class MenuDetailView(UserPassesTestMixin, DetailView):
             recipe.ingredient_rows = list(row.split("|") for row in recipe.recipe.ingredients.splitlines())
             for ingrow in recipe.ingredient_rows:
                 for ing in ingrow:
-                    quant, ingredient = parse_ingredient(ing)
-                    ingredients[ingredient].append(quant)
+                    if ing.strip():
+                        quant, ingredient = parse_ingredient(ing)
+                        ingredients[ingredient].append(quant)
 
             # get share key for recipes
             share_user = self.share_user or self.request.user
