@@ -23,10 +23,7 @@
         <ul class='results'>
             {% for result in object_list %}
                 <li>
-                    {% if result.object.pictures.all.0 %}
-                        <div class="thumb"><a href="{{ result.object.get_absolute_url }}"><img
-                                src="{{ result.object.pictures.all.0.image_thumb.url }}"></img></a></div>
-                    {% endif %}
+                    {% include "thumbnail.html" with object=result.object %}
                     <a href="{{ result.object.get_absolute_url }}?highlight={{ query }}">{{ result.object.title | highlight_all:query }}</a>
                     (<a href="{{ result.object.lesson.docfile.url }}"><span class="glyphicon glyphicon-file"
                                                                             aria-hidden="true" title="Download"></span>
@@ -87,11 +84,7 @@
                                 <a class="lesson"
                                    href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
                                 <br />
-
-                            {% if object.recipe.pictures.all.0 %}
-                                <div class="thumb"><a href="{{ object.recipe.get_absolute_url }}"><img
-                                        src="{{ object.recipe.pictures.all.0.image_thumb.url }}"></img></a></div>
-                            {% endif %}
+                            {%  include "recipes/thumbnail.html" with object=object.recipe %}
                                 {{ object.recipe.instructions|truncatechars:150 }}
                                 <span class="sub-text">{{ object.date }}</span>
 
@@ -123,10 +116,7 @@
                                    href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
                                 <br />
 
-                            {% if object.recipe.pictures.all.0 %}
-                                <div class="thumb"><a href="{{ object.recipe.get_absolute_url }}"><img
-                                        src="{{ object.recipe.pictures.all.0.image_thumb.url }}"></img></a></div>
-                            {% endif %}
+                                {% include "recipes/thumbnail.html" with object=object.recipe %}
                                 {{ object.recipe.instructions|truncatechars:150 }}
                                 <span class="sub-text">{{ object.date }}</span>
 
@@ -175,10 +165,7 @@
                         <li>
                             {% if object.has_picture %}
                                 {% for recipe in object.recipes.all %}
-                                    {% for picture in recipe.pictures.all %}
-                                        <div class="thumb2"><a href="{{ recipe.get_absolute_url }}"><img
-                                                src="{{ picture.image_thumb.url }}"/></a></div>
-                                    {% endfor %}
+                                    {% include "recipes/thumbnail.html" with object=recipe cls="thumb2" %}
                                 {% endfor %}
                                 <br/>
                             {% endif %}

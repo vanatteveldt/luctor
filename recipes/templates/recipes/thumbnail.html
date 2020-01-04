@@ -1,0 +1,4 @@
+{% if object.pictures.all.0 %}
+                        <div class="{{ cls|default:'thumb' }}"><a href="{{ object.get_absolute_url }}"><img
+                                src="{{ object.pictures.all.0.image_thumb.url }}"></img></a></div>
+                    {% endif %}
