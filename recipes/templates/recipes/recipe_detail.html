@@ -95,7 +95,9 @@
         <div class="pictures">
             <ul id="lightSlider">
                 {% for picture in object.pictures.all %}
-                    <li><a href="{{ picture.image.url }}"><img class="foto" src="{{ picture.image_small.url }}"/></a>
+                <li><a href="{{ picture.image.url }}">
+		    <img class="foto" src="{% if picture.image_small %}{{ picture.image_small.url }}{% else %}#{% endif %}"/>
+		  </a>
                         <br/>
                         <div style="height:2em">
                             {% if user.is_superuser or user == picture.user %}

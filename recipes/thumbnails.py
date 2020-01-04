@@ -9,7 +9,7 @@ def create_thumbnail(inf, size=300):
     im.thumbnail((size,size), Image.ANTIALIAS)
     f = BytesIO()
     im.save(f, format='jpeg')
-    return bytes
+    return f.getvalue()
 
 
 def save_thumbnail(source_field, destination_field, size=300):
