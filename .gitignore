@@ -12,3 +12,5 @@ local_settings.py
 env
 .gmail_pwd
 static
+
+.idea

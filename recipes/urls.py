@@ -1,6 +1,8 @@
 from django.conf.urls import url
 from django.contrib.admin.views.decorators import staff_member_required
 
+from django.conf import settings
+from django.conf.urls.static import static
 from recipes import views
 from recipes.menu import MenuAddView, MenuDetailView, MenuDeleteView, MenuAddRecipeView, MenuRecipeOrderView, \
     MenuRecipeRemoveView
@@ -12,8 +14,14 @@ urlpatterns = [
     url(r'^recept/(?P<pk>\d+)/add-picture$', views.AddPictureView.as_view(), name='picture-add'),
     url(r'^picture/(?P<pk>\d+)/delete$', views.DeletePictureView.as_view(), name='picture-delete'),
     url(r'^picture/(?P<pk>\d+)/like$', views.LikePictureView.as_view(), name='picture-like'),
+    url(r'^recepten/$', views.RecipesView.as_view(), name='recipe-list'),
+    url(r'^recent/$', views.RecentRecipesView.as_view(), name='recent-recipe-list'),
+    url(r'^favorites/$', views.FavRecipesView.as_view(), name='fav-recipe-list'),
+    url(r'^les/$', views.LessonsView.as_view(), name='lesson-list'),
+    url(r'^alle-lessen/$', views.AllLessonsView.as_view(), name='all-lesson-list'),
+    url(r'^alle-recepten/$', views.AllRecipesView.as_view(), name='all-recipe-list'),
 
-    # admin views
+                  # admin views
     url(r'^upload$', staff_member_required(views.UploadView.as_view()), name='upload'),
     url(r'^check/(?P<pk>[-\w]+)/$', staff_member_required(views.CheckView.as_view()), name='check'),
 
@@ -29,4 +37,4 @@ urlpatterns = [
     url(r'^menu/(?P<menu>\d+)/(?P<recipe>\d+)/move/(?P<direction>up|down)$', MenuRecipeOrderView.as_view(),
         name='menu-recipe-move'),
     url(r'^menu/(?P<menu>\d+)/(?P<recipe>\d+)/remove/$', MenuRecipeRemoveView.as_view(), name='menu-recipe-remove'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

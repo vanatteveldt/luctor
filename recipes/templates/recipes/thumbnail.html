@@ -4,4 +4,6 @@
     <img src="{% if object.pictures.all.0.image_thumb %}{{ object.pictures.all.0.image_thumb.url }}{% else %}#{% endif %}"></img>
   </a>
 </div>
+    {% elif placeholder|default:False %}
+    <div class="thumb">&nbsp;</div>
 {% endif %}

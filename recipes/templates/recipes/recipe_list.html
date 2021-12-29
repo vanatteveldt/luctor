@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load admin_urls %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<h1>{{ name }}</h1><ul class='results'>
+
+{% include "recipes/pagination.html" %}
+
+        {% for recipe in recipes %}
+    <li>
+                    {% include "recipes/thumbnail.html" with object=recipe placeholder=True %}
+                    <a href="{{ recipe.get_absolute_url }}?highlight={{ query }}">{{ recipe.title  }}</a>
+                    (<a href="{{ recipe.lesson.docfile.url }}"><span class="glyphicon glyphicon-file"
+                                                                            aria-hidden="true" title="Download"></span>
+                </a>
+                    <a href="{{ recipe.lesson.get_absolute_url }}">{{ recipe.lesson.title  }}</a>)<span class="sub-text"> {{ recipe.lesson.date | date }}</span><br/>
+
+                    {{ recipe.instructions|truncatechars:250 }}                    <hr/>
+                </li>
+    {%  endfor %}
+</ul>
+{% include "recipes/pagination.html" %}
+{% endblock %}

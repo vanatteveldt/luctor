@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load admin_urls %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<h1>{{ name }}</h1>
+    <ul class='results'>
+
+{% include "recipes/pagination.html" %}
+
+        {% for object in object_list %}
+     <li>
+                            {% if object.has_picture %}
+                                {% for recipe in object.recipes.all %}
+                                    {% include "recipes/thumbnail.html" with object=recipe cls="thumb2" %}
+                                {% endfor %}
+                                <br/>
+                            {% endif %}
+                            <a class="lesson" href="{{ object.docfile.url }}">
+                                <span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
+                            </a>
+                            <a class="lesson"
+                               href="{{ object.get_absolute_url }}?highlight={{ query }}">{{ object.title }}</a>
+                            <span class="sub-text">{{ object.date | date }}</span>
+                            <br/>
+                            {% for recipe in object.recipes.all %}
+                                <a class="recipe" href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>
+                                {% if not forloop.last %}, {% endif %} {% endfor %}
+                        </li>
+    {%  endfor %}
+</ul>
+{% include "recipes/pagination.html" %}
+{% endblock %}

@@ -12,6 +12,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.shortcuts import redirect
 from django.utils.html import strip_tags
+from django.views.generic import ListView
 from django.views.generic.base import RedirectView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView
@@ -91,6 +92,108 @@ class RecipeSearchView(LoginRequiredMixin, SearchView):
         context.update(**locals())
         return context
 
+
+class AllLessonsView(UserPassesTestMixin, ListView):
+    model = Lesson
+    queryset = Lesson.objects.all().order_by('-date')
+    paginate_by = 10
+    template_name = "recipes/lesson_list.html"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['name'] = "Alle kooklessen"
+        for les in ctx['object_list']:
+            les.has_picture = les.recipes.filter(pictures__isnull=False).exists()
+        return ctx
+
+
+class LessonsView(LoginRequiredMixin, ListView):
+    model = Lesson
+    paginate_by = 10
+
+    def get_queryset(self):
+        username = self.request.user.username
+        if username == "wva":
+            username = "wouter"
+        return Lesson.objects.all().order_by('-date').filter(aanwezig__icontains=username)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['name'] = "Jouw kooklessen"
+        for les in ctx['object_list']:
+            les.has_picture = les.recipes.filter(pictures__isnull=False).exists()
+        return ctx
+
+
+class AllRecipesView(UserPassesTestMixin, ListView):
+    model = Recipe
+    paginate_by = 10
+    queryset = Recipe.objects.order_by('-lesson__date')
+    template_name = "recipes/recipe_listx.html"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['recipes'] = ctx['object_list']
+        ctx['name'] = "Alle recepten"
+        return ctx
+
+
+class RecipesView(LoginRequiredMixin, ListView):
+    model = Recipe
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['recipes'] = ctx['object_list']
+        ctx['name'] = "Jouw recepten"
+        return ctx
+
+    def get_queryset(self):
+        username = self.request.user.username
+        if username == "wva":
+            username = "wouter"
+        return (Recipe.objects
+                .filter(lesson__aanwezig__icontains=username)
+                .order_by('-lesson__date'))
+
+
+class RecentRecipesView(LoginRequiredMixin, ListView):
+    model = Recipe
+    paginate_by = 10
+    template_name = "recipes/recipe_list.html"
+
+    def get_queryset(self):
+        return (Like.objects
+                .filter(user=self.request.user)
+                .order_by('-date'))
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['recipes'] = [obj.recipe for obj in ctx['object_list']]
+        ctx['name'] = "Laatst bekeken recepten"
+        return ctx
+
+class FavRecipesView(LoginRequiredMixin, ListView):
+    model = Recipe
+    paginate_by = 10
+    template_name = "recipes/recipe_list.html"
+
+    def get_queryset(self):
+        return (Like.objects
+                .filter(user=self.request.user)
+                .filter(favorite=True)
+                .order_by('-date'))
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['recipes'] = [obj.recipe for obj in ctx['object_list']]
+        ctx['name'] = "Favoriete recepten"
+        return ctx
 
 class FullTextHighlighter(Highlighter):
     max_length = 20000000
@@ -230,6 +333,8 @@ class RecipeView(UserPassesTestMixin, DetailView):
             if not self.share_user:
                 log.warning(f"Invalid hash: {share_key}")
                 return False
+        else:
+            self.share_user = self.request.user
         les = self.get_object().lesson
         return les.can_view(self.request.user) or les.can_view(self.share_user)
 
