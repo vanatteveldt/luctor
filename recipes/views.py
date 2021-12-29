@@ -401,7 +401,7 @@ class RecipeView(UserPassesTestMixin, DetailView):
 
         menus = Menu.objects.filter(user=self.request.user) if self.request.user.is_authenticated else None
         current_menu = self.request.session.get('current_menu', -1)
-
+        url = self.request.build_absolute_uri(recept.get_absolute_url())
         context.update(**locals())
         return context
 

@@ -20,6 +20,8 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 MEDIA_ROOT = os.path.join(DATA_DIR, "upload", "")
 MEDIA_URL = "/media/"
 
+FILE_UPLOAD_PERMISSIONS = 0o644
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
