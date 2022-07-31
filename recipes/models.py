@@ -2,11 +2,12 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from ipware.ip import get_ip
+from ipware.ip import get_client_ip
+
 
 
 auth_log = logging.getLogger('luctor.auth')
@@ -47,7 +48,7 @@ class Lesson(models.Model):
 
 class Recipe(models.Model):
     title = models.CharField(max_length=200)
-    lesson = models.ForeignKey(Lesson, related_name="recipes")
+    lesson = models.ForeignKey(Lesson, related_name="recipes", on_delete=models.CASCADE)
     ingredients = models.TextField()
     instructions = models.TextField()
     likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="liked_recipes", through='Like')
@@ -68,11 +69,11 @@ class Recipe(models.Model):
 
 
 class Picture(models.Model):
-    recipe = models.ForeignKey(Recipe, related_name="pictures")
+    recipe = models.ForeignKey(Recipe, related_name="pictures", on_delete=models.CASCADE)
     image = models.ImageField()
     image_small = models.ImageField(null=True)
     image_thumb = models.ImageField(null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="pictures")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="pictures", on_delete=models.CASCADE)
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
     favourite = models.BooleanField(default=False)
     
@@ -81,8 +82,8 @@ class Picture(models.Model):
 
 
 class Comment(models.Model):
-    recipe = models.ForeignKey(Recipe, related_name="comments")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="comments")
+    recipe = models.ForeignKey(Recipe, related_name="comments", on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="comments", on_delete=models.CASCADE)
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
     image = models.ImageField(null=True, blank=True)
     text = models.TextField(null=True, blank=True)
@@ -92,8 +93,8 @@ class Comment(models.Model):
 
 
 class Like(models.Model):
-    recipe = models.ForeignKey(Recipe)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
     favorite = models.BooleanField(default=True)  # for false, gives recent views
 
@@ -102,23 +103,16 @@ class Like(models.Model):
 
 
 def log_login(sender, user, request, **kwargs):
-    ip = get_ip(request)
+    ip = get_client_ip(request)
     auth_log.info("[{ip}] LOGIN USER {user}".format(**locals()))
 
 
 user_logged_in.connect(log_login)
 
 
-@receiver(pre_delete, sender=Lesson)
-def lesson_pre_delete(sender, instance, **kwargs):
-    from recipes.search_indexes import RecipeIndex  # lazy load to avoid circular import
-    for recipe in instance.recipes.all():
-        RecipeIndex().remove_object(recipe)
-
-
 class Menu(models.Model):
     name = models.CharField(max_length=255)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="menus")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="menus", on_delete=models.CASCADE)
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
     recipes = models.ManyToManyField(Recipe, through='MenuRecipe')
 
@@ -130,8 +124,8 @@ class Menu(models.Model):
 
 
 class MenuRecipe(models.Model):
-    menu = models.ForeignKey(Menu)
-    recipe = models.ForeignKey(Recipe)
+    menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     order = models.IntegerField(default=1)
 
     class Meta:

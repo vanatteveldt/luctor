@@ -1,7 +1,10 @@
 from django.conf.urls import include, url
+from django.urls import path
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
+
+import recipes.urls
 from recipes.views import RecipeSearchView
 from django.contrib.auth import views as auth_views
 from django.views.generic.base import RedirectView
@@ -22,8 +25,7 @@ urlpatterns = [
     #url('^password_change/$', auth_views.password_change, name="password_change"),
                        
     #url('^password_change/done/$', RedirectView.as_view(url='/'), name='password_change_done'),
-    url(r'^avatar/', include('avatar.urls')),
-    url(r'^', include('recipes.urls', namespace='recipes')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^', include(recipes.urls, namespace='recipes')),
+    path(r'admin/', admin.site.urls),
 
 ]

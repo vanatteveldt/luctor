@@ -6,8 +6,6 @@ from recipes.models import Lesson
 import os
 
 
-
-
 def get_text(fn):
     cmd = ["antiword", "-w", "0", "-f", fn]
     error = []

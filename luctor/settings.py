@@ -47,6 +47,7 @@ TEMPLATES = [
                 # Insert your TEMPLATE_CONTEXT_PROCESSORS here or use this
                 # list if you haven't customized them:
                 'django.contrib.auth.context_processors.auth',
+'django.template.context_processors.request',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.media',
@@ -76,18 +77,19 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'haystack',
-    'avatar',
+    'django_elasticsearch_dsl',
     'recipes',
     'widget_tweaks'
 )
 
-MIDDLEWARE_CLASSES = (
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -98,22 +100,11 @@ WSGI_APPLICATION = 'luctor.wsgi.application'
 
 ES_URL = os.environ.get("LUCTOR_ES_URL", 'localhost:9200')
 
-HAYSTACK_CONNECTIONS = {
+ELASTICSEARCH_DSL = {
     'default': {
-        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-        'URL': ES_URL,
-        'INDEX_NAME': 'haystack_kookles'
+        'hosts': ES_URL
     },
 }
-
-# MONKEY PATCH!!!!
-from haystack.backends import elasticsearch_backend
-elasticsearch_backend.FIELD_MAPPINGS['ngram'] = {
-    'type': 'string', 
-    "index_analyzer": "ngram_analyzer",
-    "search_analyzer": "standard"
-}
-# THANK YOU!!!!!
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -173,6 +164,7 @@ if DEBUG:
             'handlers': ['console'],
             'level': 'DEBUG',
         },
+        'elasticsearch': {'level': 'INFO'}
     }
 
 else:

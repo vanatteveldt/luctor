@@ -1,4 +1,3 @@
-{% load avatar_tags %}
 {% load static %}
 
 <html>
@@ -52,15 +51,6 @@ table.ingredients {
 .comments li > div {
     display:table-cell;
 }
-.avatar {
-    width:30px; height:30px;
-    margin-right:5px;
-    float:left;
-}
-.avatar img {
-    width:100%;
-    border-radius:50%;
-}
 
 .ingelogd img {
 border-radius:50%;
@@ -73,6 +63,7 @@ margin-top: -7px;
     margin-right:5px;
     display:inline;
 }
+em {font-weight: bold}
 
 .thumb2 img {
     border-radius:25%;
@@ -154,7 +145,6 @@ img.foto-small {
 	      {% if user.is_authenticated %}
 	      <li class="ingelogd">
 		<a href="{% url 'recipes:user-details' user.id %}">
-		  {% avatar user 30 %}
 		  {% if not user.last_name %}
 		  {{user.username}}
 		  {% else %}{{user.first_name}} {{user.last_name}}

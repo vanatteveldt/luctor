@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import os
 from datetime import datetime
 from itertools import islice
@@ -9,23 +10,22 @@ from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse_lazy, reverse
+from django.forms import Form, CharField
+from django.urls import reverse_lazy, reverse
 from django.shortcuts import redirect
 from django.utils.html import strip_tags
 from django.views.generic import ListView
 from django.views.generic.base import RedirectView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView
-from haystack.forms import HighlightedSearchForm
-from haystack.generic_views import SearchView
-from haystack.utils import Highlighter
-from ipware.ip import get_ip
+from elasticsearch_dsl.query import Prefix
+from ipware.ip import get_client_ip
 
 from recipes import thumbnails
 from recipes.models import Lesson, Recipe, Comment, Like, Picture, Menu
-from recipes.search_indexes import RecipeIndex
 from .auth import check_share_key, get_share_key
 from .menu import MenuForm
+from .documents import RecipeDocument
 from .upload import process_file, get_recipes
 
 log = logging.getLogger('luctor.views')
@@ -58,27 +58,49 @@ def all_user_recipes(user):
             yield from les.recipes.values_list("pk", flat=True)
 
 
-class RecipeSearchView(LoginRequiredMixin, SearchView):
-    """My custom search view."""
+class SearchForm(Form):
+    q = CharField()
 
-    form_class = HighlightedSearchForm
+
+class RecipeSearchView(LoginRequiredMixin, ListView):#, SearchView):
+    template_name = "search/search.html"
+    #form_class = HighlightedSearchForm
+
+    def __init__(self, *args, **kargs):
+        self.n = None
+        super().__init__(*args, **kargs)
 
     def get_queryset(self):
-        queryset = super(RecipeSearchView, self).get_queryset()
-        # further filter queryset based on some set of criteria
-        if not self.request.user.is_superuser:
-            # This is *not* a very nice way to do this...
-            ids = list(all_user_recipes(self.request.user))
-            queryset = queryset.filter(id__in=ids)
-        return queryset
+        if not 'q' in self.request.GET:
+            return
+        page = int(self.request.GET.get("page", 1))
+        terms = self.request.GET['q'].split()
+        clauses = ([Prefix(title=term) for term in terms] + [Prefix(instructions=term) for term in terms]
+                   + [Prefix(ingredients=term) for term in terms]+ [Prefix(lesson=term) for term in terms])
+        q = (RecipeDocument.search().query('bool', should=clauses)
+             .highlight('title', 'lesson', fragment_size=500)
+             .highlight('ingredients', 'instructions',fragment_size=30, number_of_fragments=5))
+        self.n = q.count()
+        hits = list(q[((page-1)*10):(page*10)])
+        recipes = {r.id: r for r in Recipe.objects.filter(pk__in=[h.meta.id for h in hits])}
+        for hit in hits:
+            hit.object = recipes[int(hit.meta.id)]
+            hit.highlights = list(getattr(hit.meta.highlight, 'ingredients', [])) + list(getattr(hit.meta.highlight, 'instructions', []))
+            hit.description = "...".join(hit.highlights[:5]) if hit.highlights else hit.object.instructions[:100]
+        return hits
 
     def get_context_data(self, **kwargs):
         if 'toggle_like' in self.request.GET:
             like = Like.objects.get(pk=self.request.GET['toggle_like'])
             like.favorite = not like.favorite
             like.save()
+        searchform = SearchForm(self.request.GET)
 
         context = super(RecipeSearchView, self).get_context_data(**kwargs)
+        query = self.request.GET.get("q")
+        page = int(self.request.GET.get("page", 1))
+        num_pages = self.n and math.ceil(self.n / 10)
+
         your_likes = Like.objects.filter(user=self.request.user).filter(favorite=True).order_by('-date')[:10]
         your_recent = (Like.objects.filter(user=self.request.user).filter(favorite=False)
                            .order_by('-favorite', '-date')[:10])
@@ -136,6 +158,7 @@ class AllRecipesView(UserPassesTestMixin, ListView):
 
     def test_func(self):
         return self.request.user.is_superuser
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['recipes'] = ctx['object_list']
@@ -178,6 +201,7 @@ class RecentRecipesView(LoginRequiredMixin, ListView):
         ctx['name'] = "Laatst bekeken recepten"
         return ctx
 
+
 class FavRecipesView(LoginRequiredMixin, ListView):
     model = Recipe
     paginate_by = 10
@@ -195,13 +219,6 @@ class FavRecipesView(LoginRequiredMixin, ListView):
         ctx['name'] = "Favoriete recepten"
         return ctx
 
-class FullTextHighlighter(Highlighter):
-    max_length = 20000000
-
-    def highlight(self, text_block):
-        self.text_block = strip_tags(text_block)
-        highlight_locations = self.find_highlightable_words()
-        return self.render_html(highlight_locations, 0, len(text_block))
 
 
 class ChangeAanwezigView(UpdateView):
@@ -353,8 +370,8 @@ class RecipeView(UserPassesTestMixin, DetailView):
 
     def _log_recipe_access(self):
         r = Recipe.objects.get(pk=self.kwargs['pk'])
-        ip = get_ip(self.request)
-        if self.request.user.is_authenticated():
+        ip = get_client_ip(self.request)
+        if self.request.user.is_authenticated:
             log.info("[{ip}] USER {self.request.user.username} ACCESS {r.pk}:{r.title}".format(**locals()))
         else:
             share = self.request.GET.get('share')
@@ -449,7 +466,6 @@ class CheckView(UpdateView):
         if actie == "ok":  # redirect to lesson object
             for recipe in get_recipes(self.object):
                 recipe.save()
-                RecipeIndex().update_object(recipe)
             self.object.status = 5
             self.object.save()
 

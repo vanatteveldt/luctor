@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 {% load admin_urls %}
-{% load highlight_all %}
-{% load avatar_tags %}
 {% load widget_tweaks %}
 
 {% block head %}
@@ -66,14 +64,14 @@
         {% for row in ingredient_rows %}
             <tr>
                 {% for ing in row %}
-                    <td>{{ ing | highlight_all:highlight }}</td>
+                    <td>{{ ing }}</td>
                 {% endfor %}
             </tr>
         {% endfor %}
     </table>
 
     <p><small>Instructies:</small></br/>
-        {{ object.instructions | highlight_all:highlight }}
+        {{ object.instructions }}
 
         {% if user.is_authenticated %}
             <hr/><h2>Menu</h2>
@@ -141,7 +139,6 @@
 {% for comment in comments %}
     <li>
       <div class="avatar">
-{% avatar comment.user 30 %}
       </div>
       <div>
         <p class="">

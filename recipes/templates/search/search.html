@@ -1,14 +1,11 @@
 {% extends 'base.html' %}
-{% load highlight %}
-{% load highlight_all %}
-{% load avatar_tags %}
 
 {% block content %}
     <h2>Recepten zoeken</h2>
 
     <form method="get" action="#">
         <table>
-            {{ form.as_table }}
+            {{ searchform.q }}
             <tr>
                 <td>&nbsp;</td>
                 <td>
@@ -23,14 +20,19 @@
         <ul class='results'>
             {% for result in object_list %}
                 <li>
-                    {% include "thumbnail.html" with object=result.object %}
-                    <a href="{{ result.object.get_absolute_url }}?highlight={{ query }}">{{ result.object.title | highlight_all:query }}</a>
+                    {% include "recipes/thumbnail.html" with object=result.object %}
+                    <a href="{{ result.object.get_absolute_url }}?highlight={{ query }}">{{ result.meta.highlight.title.0 | safe }}</a>
                     (<a href="{{ result.object.lesson.docfile.url }}"><span class="glyphicon glyphicon-file"
                                                                             aria-hidden="true" title="Download"></span>
                 </a>
-                    <a href="{{ result.object.lesson.get_absolute_url }}">{{ result.object.lesson.title | highlight_all:query }}</a>)<br/>
-
-                    {% highlight result.object.full_text with query max_length 250 %}
+                    <a href="{{ result.object.lesson.get_absolute_url }}">
+                    {%  if result.meta.highlight.lesson %}
+                        {{  result.meta.highlight.lesson.0 | safe }}
+                    {% else %}
+                        {{ result.object.lesson.title }}
+                        {%  endif %}
+                    </a>)<br/>
+{{ result.description | safe }}
                     <hr/>
                 </li>
             {% empty %}
@@ -42,7 +44,7 @@
         {% endif %}
 
         <span class="current">
-            Page {{ page_obj.number }} of {{ paginator.num_pages }}
+            Page {{ page }} of {{ num_pages }}
         </span>
 
         {% if page_obj.has_next %}
@@ -72,9 +74,10 @@
                         <li>
                             <p>
 
-                            <a href="{{object.get_absolute_url}}?toggle_like={{ object.pk }}">
-                            	<span class="glyphicon glyphicon-star{% if not object.favorite %}-empty{% endif %}" aria-hidden="true"></span>
-                            </a>
+                                <a href="{{ object.get_absolute_url }}?toggle_like={{ object.pk }}">
+                                    <span class="glyphicon glyphicon-star{% if not object.favorite %}-empty{% endif %}"
+                                          aria-hidden="true"></span>
+                                </a>
                                 <a class="recipe"
                                    href="{{ object.recipe.get_absolute_url }}?highlight={{ query }}">{{ object.recipe.title }}</a>
                                 <br/>
@@ -83,8 +86,8 @@
                                 </a>
                                 <a class="lesson"
                                    href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
-                                <br />
-                            {%  include "recipes/thumbnail.html" with object=object.recipe %}
+                                <br/>
+                                {% include "recipes/thumbnail.html" with object=object.recipe %}
                                 {{ object.recipe.instructions|truncatechars:150 }}
                                 <span class="sub-text">{{ object.date }}</span>
 
@@ -98,14 +101,15 @@
             <div class="col-md-3">
 
                 <h3><a href="{% url 'recipes:recent-recipe-list' %}">Recent bekeken</a></h3>
-<ul class='results'>
+                <ul class='results'>
                     {% for object in your_recent %}
                         <li>
                             <p>
 
-                            <a href="{{object.get_absolute_url}}?toggle_like={{ object.pk }}">
-                            	<span class="glyphicon glyphicon-star{% if not object.favorite %}-empty{% endif %}" aria-hidden="true"></span>
-                            </a>
+                                <a href="{{ object.get_absolute_url }}?toggle_like={{ object.pk }}">
+                                    <span class="glyphicon glyphicon-star{% if not object.favorite %}-empty{% endif %}"
+                                          aria-hidden="true"></span>
+                                </a>
                                 <a class="recipe"
                                    href="{{ object.recipe.get_absolute_url }}?highlight={{ query }}">{{ object.recipe.title }}</a>
                                 <br/>
@@ -114,7 +118,7 @@
                                 </a>
                                 <a class="lesson"
                                    href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
-                                <br />
+                                <br/>
 
                                 {% include "recipes/thumbnail.html" with object=object.recipe %}
                                 {{ object.recipe.instructions|truncatechars:150 }}
@@ -127,24 +131,26 @@
                 </ul>
 
             </div>
-        <div class="col-md-3">
+            <div class="col-md-3">
 
 
                 <h3>Jouw Menu's</h3>
-                    <form  class="form-inline" action="{% url 'recipes:menu-add' %}" method="POST">
-                         {% csrf_token %}
+                <form class="form-inline" action="{% url 'recipes:menu-add' %}" method="POST">
+                    {% csrf_token %}
 
-<div class="form-group">
-    <input class="form-control" name="name" placeholder="Menu Toevoegen">  </div>
-    <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true" title="Toevoegen"></span></button>
-                    </form>
+                    <div class="form-group">
+                        <input class="form-control" name="name" placeholder="Menu Toevoegen"></div>
+                    <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-plus"
+                                                                        aria-hidden="true" title="Toevoegen"></span>
+                    </button>
+                </form>
 
                 <ul class='results'>
                     {% for object in menus %}
                         <li>
                             <a class="lesson" href="{{ object.get_absolute_url }}">{{ object.name }}</a>
                             <span class="sub-text">{{ object.date | date }}</span><br/>
-                         {% for recipe in object.recipes.all %}
+                            {% for recipe in object.recipes.all %}
                                 <a class="recipe" href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>
                                 {% if not forloop.last %}, {% endif %} {% endfor %}
                         </li>
@@ -193,7 +199,6 @@
 		{% for object in other_likes %}
                 <li>
 
-<div class="image">{% avatar object.user 30 %}</div>
 <div>
 <p><a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
 (<a href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>, 

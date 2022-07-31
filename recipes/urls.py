@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from recipes import views
 from recipes.menu import MenuAddView, MenuDetailView, MenuDeleteView, MenuAddRecipeView, MenuRecipeOrderView, \
     MenuRecipeRemoveView
-
+app_name='recipes'
 urlpatterns = [
     url(r'^$', views.RecipeSearchView.as_view(), name='search'),
     url(r'^les/(?P<pk>[-\w]+)/$', views.LessonView.as_view(), name='lesson-detail'),
