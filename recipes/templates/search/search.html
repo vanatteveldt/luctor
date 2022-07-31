@@ -16,12 +16,22 @@
     </form>
 
     {% if query %}
-        <h3>Resultaten</h3>
+        <h3>{{ page_obj.n }} Resultaten</h3>
+        {% include "recipes/pagination_search.html" %}
+
         <ul class='results'>
             {% for result in object_list %}
                 <li>
                     {% include "recipes/thumbnail.html" with object=result.object %}
-                    <a href="{{ result.object.get_absolute_url }}?highlight={{ query }}">{{ result.meta.highlight.title.0 | safe }}</a>
+                    <a href="{{ result.object.get_absolute_url }}?highlight={{ query }}">
+                    {%  if result.meta.highlight.title %}
+                        {{  result.meta.highlight.title.0 | safe }}
+                    {% else %}
+                        {{ result.object.title }}
+                        {%  endif %}
+
+
+                    </a>
                     (<a href="{{ result.object.lesson.docfile.url }}"><span class="glyphicon glyphicon-file"
                                                                             aria-hidden="true" title="Download"></span>
                 </a>
@@ -39,28 +49,10 @@
                 <p>No results found.</p>
             {% endfor %}
         </ul>
-        {% if page_obj.has_previous %}
-            <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}">previous</a> |
-        {% endif %}
 
-        <span class="current">
-            Page {{ page }} of {{ num_pages }}
-        </span>
 
-        {% if page_obj.has_next %}
-            | <a href="?q={{ query }}&page={{ page_obj.next_page_number }}">next</a>
-        {% endif %}
 
-        {% if page.has_previous or page.has_next %}
-            <div>
-                {% if page.has_previous %}
-                    <a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">{% endif %}&laquo; Previous
-                {% if page.has_previous %}</a>{% endif %}
-                |
-                {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}Next
-                &raquo;{% if page.has_next %}</a>{% endif %}
-            </div>
-        {% endif %}
+{% include "recipes/pagination_search.html" %}
     {% else %}
         <!-- no results, show favourites and new lessons -->
 

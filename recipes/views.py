@@ -18,7 +18,7 @@ from django.views.generic import ListView
 from django.views.generic.base import RedirectView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView
-from elasticsearch_dsl.query import Prefix
+from elasticsearch_dsl.query import Prefix, Bool
 from ipware.ip import get_client_ip
 
 from recipes import thumbnails
@@ -75,11 +75,13 @@ class RecipeSearchView(LoginRequiredMixin, ListView):#, SearchView):
             return
         page = int(self.request.GET.get("page", 1))
         terms = self.request.GET['q'].split()
-        clauses = ([Prefix(title=term) for term in terms] + [Prefix(instructions=term) for term in terms]
-                   + [Prefix(ingredients=term) for term in terms]+ [Prefix(lesson=term) for term in terms])
+        clauses = []
+        for field in ['title', 'instructions', 'ingredients', 'lesson']:
+            clauses.append(Bool(must=[Prefix(**{field: term}) for term in terms]))
+
         q = (RecipeDocument.search().query('bool', should=clauses)
              .highlight('title', 'lesson', fragment_size=500)
-             .highlight('ingredients', 'instructions',fragment_size=30, number_of_fragments=5))
+             .highlight('ingredients', 'instructions', fragment_size=30, number_of_fragments=5))
         self.n = q.count()
         hits = list(q[((page-1)*10):(page*10)])
         recipes = {r.id: r for r in Recipe.objects.filter(pk__in=[h.meta.id for h in hits])}
@@ -98,8 +100,17 @@ class RecipeSearchView(LoginRequiredMixin, ListView):#, SearchView):
 
         context = super(RecipeSearchView, self).get_context_data(**kwargs)
         query = self.request.GET.get("q")
-        page = int(self.request.GET.get("page", 1))
-        num_pages = self.n and math.ceil(self.n / 10)
+        if self.n:
+            page = int(self.request.GET.get("page", 1))
+            num_pages = math.ceil(self.n / 10)
+            page_obj = dict(
+                n = self.n,
+                number=page,
+                paginator=dict(num_pages=num_pages),
+                has_next=page < num_pages,
+                has_previous=page > 1,
+                base=f"?q={query}",
+            )
 
         your_likes = Like.objects.filter(user=self.request.user).filter(favorite=True).order_by('-date')[:10]
         your_recent = (Like.objects.filter(user=self.request.user).filter(favorite=False)
