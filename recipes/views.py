@@ -77,7 +77,7 @@ class RecipeSearchView(LoginRequiredMixin, ListView):#, SearchView):
         terms = self.request.GET['q'].split()
         clauses = []
         for field in ['title', 'instructions', 'ingredients', 'lesson']:
-            clauses.append(Bool(must=[Prefix(**{field: term}) for term in terms]))
+            clauses.append(Bool(must=[Prefix(**{field: term.lower()}) for term in terms]))
 
         q = (RecipeDocument.search().query('bool', should=clauses)
              .highlight('title', 'lesson', fragment_size=500)
