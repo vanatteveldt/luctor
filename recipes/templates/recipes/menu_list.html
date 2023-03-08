@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load admin_urls %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<h1>Jouw menu's</h1><ul class='results'>
+
+{% include "recipes/pagination.html" %}
+
+        {% for object in object_list %}
+    <li>
+
+
+                    
+                    <a class="lesson"
+                       href="{{ object.get_absolute_url }}">{{ object.name }}</a>
+                    <span class="sub-text">{{ object.date | date }}</span>
+                    <br/>
+                    {% for recipe in object.recipes.all %}
+                        <a class="recipe" href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>
+                        {% if not forloop.last %}, {% endif %} {% endfor %}
+                </li>
+
+                </li>
+    {%  endfor %}
+</ul>
+{% include "recipes/pagination.html" %}
+{% endblock %}
