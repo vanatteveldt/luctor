@@ -3,4 +3,5 @@ elasticsearch>=7,<8
 markdown2
 django-widget_tweaks
 django-elasticsearch-dsl
-
+django-ipware
+Pillow

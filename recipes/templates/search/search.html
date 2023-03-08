@@ -71,7 +71,7 @@
                                           aria-hidden="true"></span>
                                 </a>
                                 <a class="recipe"
-                                   href="{{ object.recipe.get_absolute_url }}?highlight={{ query }}">{{ object.recipe.title }}</a>
+                                   href="{{ object.recipe.get_absolute_url }}">{{ object.recipe.title }}</a>
                                 <br/>
                                 <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span
                                         class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
@@ -103,7 +103,7 @@
                                           aria-hidden="true"></span>
                                 </a>
                                 <a class="recipe"
-                                   href="{{ object.recipe.get_absolute_url }}?highlight={{ query }}">{{ object.recipe.title }}</a>
+                                   href="{{ object.recipe.get_absolute_url }}">{{ object.recipe.title }}</a>
                                 <br/>
                                 <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span
                                         class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
@@ -126,7 +126,7 @@
             <div class="col-md-3">
 
 
-                <h3>Jouw Menu's</h3>
+                <h3><a href="{% url 'recipes:menu-list' %}">Jouw Menu's</a></h3>
                 <form class="form-inline" action="{% url 'recipes:menu-add' %}" method="POST">
                     {% csrf_token %}
 
@@ -171,7 +171,7 @@
                                 <span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
                             </a>
                             <a class="lesson"
-                               href="{{ object.get_absolute_url }}?highlight={{ query }}">{{ object.title }}</a>
+                               href="{{ object.get_absolute_url }}">{{ object.title }}</a>
                             <span class="sub-text">{{ object.date | date }}</span>
                             <br/>
                             {% for recipe in object.recipes.all %}

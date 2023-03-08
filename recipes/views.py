@@ -143,6 +143,14 @@ class AllLessonsView(UserPassesTestMixin, ListView):
         return ctx
 
 
+class MenusView(LoginRequiredMixin, ListView):
+    model = Menu
+    paginate_by = 10
+    
+    def get_queryset(self):
+        return self.request.user.menus.order_by('-date').all()
+
+
 class LessonsView(LoginRequiredMixin, ListView):
     model = Lesson
     paginate_by = 10

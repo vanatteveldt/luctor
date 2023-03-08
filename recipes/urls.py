@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^les/$', views.LessonsView.as_view(), name='lesson-list'),
     url(r'^alle-lessen/$', views.AllLessonsView.as_view(), name='all-lesson-list'),
     url(r'^alle-recepten/$', views.AllRecipesView.as_view(), name='all-recipe-list'),
+    url(r'^menus/$', views.MenusView.as_view(), name='menu-list'),
 
                   # admin views
     url(r'^upload$', staff_member_required(views.UploadView.as_view()), name='upload'),
