@@ -29,7 +29,7 @@ FILE_UPLOAD_PERMISSIONS = 0o644
 SECRET_KEY = '-z$%!6hq(wt@4r%l3qp7!5fl776*-mk_qi43m%(c=x&m6$c=(h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-ALLOWED_HOSTS = ['kookboot.com', 'kookles.vanatteveldt.com', 'localhost']
+ALLOWED_HOSTS = ['kookboot.com', 'kookles.vanatteveldt.com', 'localhost', '127.0.0.1']
 if os.environ.get("DEBUG"):
     DEBUG = os.environ.get('DEBUG', 'N') == 'Y'
 else:
@@ -77,7 +77,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_elasticsearch_dsl',
     'recipes',
     'widget_tweaks'
 )
@@ -97,14 +96,6 @@ MIDDLEWARE = (
 ROOT_URLCONF = 'luctor.urls'
 
 WSGI_APPLICATION = 'luctor.wsgi.application'
-
-ES_URL = os.environ.get("LUCTOR_ES_URL", 'localhost:9200')
-
-ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': ES_URL
-    },
-}
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases

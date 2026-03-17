@@ -19,40 +19,42 @@
         <h3>{{ page_obj.n }} Resultaten</h3>
         {% include "recipes/pagination_search.html" %}
 
+        <div class="row">
+        {% if matching_lessons %}
+        <div class="col-md-3">
+            <h4>Kooklessen</h4>
+            <ul class="results">
+                {% for lesson in matching_lessons %}
+                <li>
+                    <a class="lesson" href="{{ lesson.get_absolute_url }}?highlight={{ query }}">{{ lesson.hl_title|safe }}</a>
+                    <span class="sub-text">{{ lesson.date|date }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="{% if matching_lessons %}col-md-9{% else %}col-md-12{% endif %}">
+        <h4>Recepten</h4>
         <ul class='results'>
             {% for result in object_list %}
                 <li>
-                    {% include "recipes/thumbnail.html" with object=result.object %}
-                    <a href="{{ result.object.get_absolute_url }}?highlight={{ query }}">
-                    {%  if result.meta.highlight.title %}
-                        {{  result.meta.highlight.title.0 | safe }}
-                    {% else %}
-                        {{ result.object.title }}
-                        {%  endif %}
-
-
-                    </a>
-                    (<a href="{{ result.object.lesson.docfile.url }}"><span class="glyphicon glyphicon-file"
-                                                                            aria-hidden="true" title="Download"></span>
-                </a>
-                    <a href="{{ result.object.lesson.get_absolute_url }}">
-                    {%  if result.meta.highlight.lesson %}
-                        {{  result.meta.highlight.lesson.0 | safe }}
-                    {% else %}
-                        {{ result.object.lesson.title }}
-                        {%  endif %}
-                    </a>)<br/>
-{{ result.description | safe }}
+                    {% include "recipes/thumbnail.html" with object=result %}
+                    <a href="{{ result.get_absolute_url }}?highlight={{ query }}">{{ result.hl_title|safe }}</a>
+                    (<a href="{{ result.lesson.docfile.url }}"><span class="glyphicon glyphicon-file"
+                                                                     aria-hidden="true" title="Download"></span></a>
+                    <a href="{{ result.lesson.get_absolute_url }}?highlight={{ query }}">{{ result.lesson.title }}</a>)<br/>
+                    {{ result.description|safe }}
                     <hr/>
                 </li>
             {% empty %}
                 <p>No results found.</p>
             {% endfor %}
         </ul>
+        </div>
+        </div>
 
-
-
-{% include "recipes/pagination_search.html" %}
+        {% include "recipes/pagination_search.html" %}
     {% else %}
         <!-- no results, show favourites and new lessons -->
 

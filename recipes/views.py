@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import os
+import re
 from datetime import datetime
 from itertools import islice
 
@@ -18,14 +19,13 @@ from django.views.generic import ListView
 from django.views.generic.base import RedirectView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView
-from elasticsearch_dsl.query import Prefix, Bool
+from django.db import connection
 from ipware.ip import get_client_ip
 
 from recipes import thumbnails
 from recipes.models import Lesson, Recipe, Comment, Like, Picture, Menu
 from .auth import check_share_key, get_share_key
 from .menu import MenuForm
-from .documents import RecipeDocument
 from .upload import process_file, get_recipes
 
 log = logging.getLogger('luctor.views')
@@ -58,6 +58,12 @@ def all_user_recipes(user):
             yield from les.recipes.values_list("pk", flat=True)
 
 
+def _highlight(text, query):
+    for term in query.lower().split():
+        text = re.sub(r'(?i)(\b' + re.escape(term) + r'\S*)', r'<span class="highlighted">\1</span>', text)
+    return text
+
+
 class SearchForm(Form):
     q = CharField()
 
@@ -71,25 +77,45 @@ class RecipeSearchView(LoginRequiredMixin, ListView):#, SearchView):
         super().__init__(*args, **kargs)
 
     def get_queryset(self):
-        if not 'q' in self.request.GET:
-            return
-        page = int(self.request.GET.get("page", 1))
-        terms = self.request.GET['q'].split()
-        clauses = []
-        for field in ['title', 'instructions', 'ingredients', 'lesson']:
-            clauses.append(Bool(must=[Prefix(**{field: term.lower()}) for term in terms]))
+        if 'q' not in self.request.GET:
+            return []
+        terms = self.request.GET['q'].lower().split()
+        if not terms:
+            return []
+        fts_query = ' '.join(f'{t}*' for t in terms)
+        page = int(self.request.GET.get('page', 1))
+        offset = (page - 1) * 10
 
-        q = (RecipeDocument.search().query('bool', should=clauses)
-             .highlight('title', 'lesson', fragment_size=500)
-             .highlight('ingredients', 'instructions', fragment_size=30, number_of_fragments=5))
-        self.n = q.count()
-        hits = list(q[((page-1)*10):(page*10)])
-        recipes = {r.id: r for r in Recipe.objects.filter(pk__in=[h.meta.id for h in hits])}
-        for hit in hits:
-            hit.object = recipes[int(hit.meta.id)]
-            hit.highlights = list(getattr(hit.meta.highlight, 'ingredients', [])) + list(getattr(hit.meta.highlight, 'instructions', []))
-            hit.description = "...".join(hit.highlights[:5]) if hit.highlights else hit.object.instructions[:100]
-        return hits
+        with connection.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM recipes_fts WHERE recipes_fts MATCH %s", [fts_query])
+            self.n = cur.fetchone()[0]
+
+        sql = """
+            SELECT r.id,
+                   snippet(recipes_fts, 0, '<span class="highlighted">', '</span>', '…', 10) AS hl_title,
+                   snippet(recipes_fts, 1, '<span class="highlighted">', '</span>', '…', 5)  AS hl_ingredients,
+                   snippet(recipes_fts, 2, '<span class="highlighted">', '</span>', '…', 5)  AS hl_instructions
+            FROM recipes_fts
+            JOIN recipes_recipe r ON r.id = recipes_fts.rowid
+            WHERE recipes_fts MATCH %s
+            ORDER BY rank
+            LIMIT 10 OFFSET %s
+        """
+        with connection.cursor() as cur:
+            cur.execute(sql, [fts_query, offset])
+            rows = cur.fetchall()
+
+        recipe_ids = [row[0] for row in rows]
+        recipe_map = {r.id: r for r in Recipe.objects.filter(pk__in=recipe_ids).select_related('lesson')}
+
+        results = []
+        for recipe_id, hl_title, hl_ingredients, hl_instructions in rows:
+            recipe = recipe_map[recipe_id]
+            recipe.hl_title = hl_title or recipe.title
+            snippets = [s for s in [hl_ingredients, hl_instructions] if s]
+            recipe.description = '…'.join(snippets[:5]) if snippets else recipe.instructions[:100]
+            results.append(recipe)
+        return results
 
     def get_context_data(self, **kwargs):
         if 'toggle_like' in self.request.GET:
@@ -100,6 +126,19 @@ class RecipeSearchView(LoginRequiredMixin, ListView):#, SearchView):
 
         context = super(RecipeSearchView, self).get_context_data(**kwargs)
         query = self.request.GET.get("q")
+        matching_lessons = []
+        if query:
+            terms = query.lower().split()
+            for lesson in Lesson.objects.exclude(title__isnull=True).order_by('date'):
+                words = lesson.title.lower().split()
+                if all(any(w.startswith(t) for w in words) for t in terms):
+                    hl = lesson.title
+                    for t in terms:
+                        hl = re.sub(r'(?i)(\b' + re.escape(t) + r'\S*)', r'<span class="highlighted">\1</span>', hl)
+                    lesson.hl_title = hl
+                    matching_lessons.append(lesson)
+                    if len(matching_lessons) >= 10:
+                        break
         if self.n:
             page = int(self.request.GET.get("page", 1))
             num_pages = math.ceil(self.n / 10)
@@ -282,13 +321,15 @@ class LessonView(UserPassesTestMixin, DetailView):
         nchecked = Lesson.objects.filter(status=4).count()
 
         if highlight:
-            hl = FullTextHighlighter(highlight)
-            text = hl.highlight(text)
+            text = _highlight(text, highlight)
+            for recipe in recipes:
+                recipe.hl_title = _highlight(recipe.title, highlight)
+                recipe.hl_ingredients = _highlight(recipe.ingredients, highlight)
+                recipe.hl_instructions = _highlight(recipe.instructions, highlight)
         if les.parsed:
             p = les.parsed
             if highlight:
-                hl = FullTextHighlighter(highlight)
-                p = hl.highlight(p)
+                p = _highlight(p, highlight)
             p = p.replace("\r\n", "\n").replace("\n\n|", "\n\n|  |\n|---\n|")
             parsed_html = markdown2.markdown(p, extras=["tables", "metadata"])
 
@@ -430,6 +471,10 @@ class RecipeView(UserPassesTestMixin, DetailView):
 
         ingredient_rows = list(row.split("|") for row in recept.ingredients.splitlines())
         highlight = self.request.GET.get('highlight')
+        highlighted_title = _highlight(recept.title, highlight) if highlight else None
+        highlighted_instructions = _highlight(recept.instructions, highlight) if highlight else None
+        if highlight:
+            ingredient_rows = [[_highlight(cell, highlight) for cell in row] for row in ingredient_rows]
 
         # comments = recept.comments.all()
         commentform = CommentForm()

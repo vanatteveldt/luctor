@@ -46,7 +46,7 @@
                 <span class="glyphicon glyphicon-star{% if not isliked %}-empty{% endif %}" aria-hidden="true"></span>
             </a>
         {% endif %}
-        {{ object.title }}
+        {{ highlighted_title|default:object.title|safe }}
     </h1>
     {% if user.is_authenticated %}
         {% if can_view_lesson %}
@@ -64,14 +64,14 @@
         {% for row in ingredient_rows %}
             <tr>
                 {% for ing in row %}
-                    <td>{{ ing }}</td>
+                    <td>{{ ing|safe }}</td>
                 {% endfor %}
             </tr>
         {% endfor %}
     </table>
 
     <p><small>Instructies:</small></br/>
-        {{ object.instructions }}
+        {{ highlighted_instructions|default:object.instructions|safe }}
 
         {% if user.is_authenticated %}
             <hr/><h2>Menu</h2>

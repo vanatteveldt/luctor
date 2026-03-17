@@ -50,14 +50,14 @@ Aanwezig: {{object.aanwezig}}
 {% endif %}
       <div class="recipes">
 {% for recipe in recipes %}
-<h2><a href="{{recipe.get_absolute_url}}">{{recipe.title}}</a></h2>
+<h2><a href="{{recipe.get_absolute_url}}{% if highlight %}?highlight={{ highlight }}{% endif %}">{{ recipe.hl_title|default:recipe.title|safe }}</a></h2>
   {% for picture in recipe.pictures.all %}
 <a href="{{picture.image.url}}">
   <img class="foto-small" src="{% if picture.image_small %}{{ picture.image_small.url }}{% else %}#{% endif %}" />
 </a>
   {% endfor %}
-<p>{{recipe.ingredients}}<p>
-<p>{{recipe.instructions}}<p>
+<p>{{ recipe.hl_ingredients|default:recipe.ingredients|safe }}<p>
+<p>{{ recipe.hl_instructions|default:recipe.instructions|safe }}<p>
 {% endfor %}
       </div>
     </div>
