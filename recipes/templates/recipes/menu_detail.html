@@ -1,87 +1,88 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>
+
+<a class="back-link" href="javascript:history.back()">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Terug
+</a>
+
+<div class="lesson-header">
+    <div class="lesson-meta">
+        <span class="lesson-date">{{ object.date|date }}</span>
         {% if user.is_superuser or user == object.user %}
-            <a href="{% url 'recipes:menu-delete' object.pk %}"
-               onclick="if (!confirm('Weet je het zeker?')) return false;" type="button" class="btn btn-danger"
-               aria-label="Delete">
-                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-            </a>
+        <a class="btn btn-danger" href="{% url 'recipes:menu-delete' object.pk %}"
+           onclick="if (!confirm('Weet je het zeker?')) return false;">Verwijderen</a>
         {% endif %}
-        {{ object.name }}</h1>
-
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Lijst</a></li>
-    <li role="presentation"><a href="#instructions" aria-controls="profile" role="tab" data-toggle="tab">Instructies</a></li>
-    <li role="presentation"><a href="#shopping" aria-controls="profile" role="tab" data-toggle="tab">Boodschappen</a></li>
-  </ul>
-
-  <!-- Tab panes -->
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="home">
-    <br/>
-       {%  if not recipes %}
-    <div class="alert alert-info" role="alert">
-  Om recepten toe te voegen:<br/>
-        - Zoek via <a href="/">Home</a> een recept<br/>
-    - Kies in dat recept dit menu en klik 'toevoegen'
+    </div>
+    <h1 class="lesson-title">{{ object.name }}</h1>
 </div>
-    {% endif %}
-        {%  if warning %}
-    <div class="alert alert-warning" role="alert">
-{{warning}}
-    </div>
-    {% endif %}
-<ul class="list-group">
-    {% for mr in recipes %}
-        <li class="list-group-item">
-            <a style="padding:0px" class="btn btn-sm {% if forloop.first %}disabled{% endif %} }}"
-               href="{% url 'recipes:menu-recipe-move' object.pk mr.recipe.pk 'up'%}"><span class="glyphicon glyphicon-arrow-up"></span></a>
-            <a style="padding:0px"  class="btn btn-sm {% if forloop.last %}disabled{% endif %} }}"
-               href="{% url 'recipes:menu-recipe-move' object.pk mr.recipe.pk 'down'%}"><span class="glyphicon glyphicon-arrow-down"></span></a>
-            <a style="padding:0px"  class="btn btn-sm {% if forloop.last %}disabled{% endif %} }}"
-               href="{% url 'recipes:menu-recipe-remove' object.pk mr.recipe.pk %}"><span class="glyphicon glyphicon-trash"></span></a>
-             <a href="{{ mr.recipe.get_absolute_url }}?share={{ mr.share_key }}">{{ mr.recipe.title }}</a>
-        (uit: <a class="lesson" href="{{ mr.recipe.lesson.get_absolute_url }}">{{ mr.recipe.lesson }}</a>,
-         <span class="sub-text">{{ mr.recipe.lesson.date | date }}</span>)
-        </li>
-    {% endfor %}
-</ul>
-    </div>
-    <div role="tabpanel" class="tab-pane" id="instructions">
 
+{% if not recipes %}
+<div class="full-card" style="margin-bottom:1rem">
+    <p style="font-size:0.875rem;color:var(--ink-3)">
+        Om recepten toe te voegen:<br>
+        – Zoek via <a href="/">Home</a> een recept<br>
+        – Kies in dat recept dit menu en klik 'toevoegen'
+    </p>
+</div>
+{% endif %}
+
+{% if warning %}
+<div class="full-card" style="margin-bottom:1rem;border-color:var(--accent)">
+    <p style="font-size:0.875rem;color:var(--accent)">{{ warning }}</p>
+</div>
+{% endif %}
+
+<!-- CSS-only tabs: radio inputs must precede all tab content -->
+<input class="tab-radio" type="radio" name="menutab" id="tab-lijst" checked>
+<input class="tab-radio" type="radio" name="menutab" id="tab-instructies">
+
+<div class="tab-bar">
+    <label class="tab-label" for="tab-lijst">Recepten</label>
+    <label class="tab-label" for="tab-instructies">Instructies</label>
+</div>
+
+<div class="tab-panel panel-lijst">
+    <div class="recipe-count">{{ recipes|length }} recept{% if recipes|length != 1 %}en{% endif %}</div>
+    <div class="recipe-grid">
         {% for mr in recipes %}
-            {% if not forloop.first %}<hr/>{% endif %}
-            <h4>{{mr.recipe.title}}</h4>
-    <table class="ingredients">
-        {% for row in mr.ingredient_rows %}
-            <tr>
-                {% for ing in row %}
-                    <td>{{ ing  }}</td>
-                {% endfor %}
-            </tr>
+        <div class="recipe-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
+                <a class="recipe-card-title" href="{{ mr.recipe.get_absolute_url }}?share={{ mr.share_key }}">{{ mr.recipe.title }}</a>
+                <div class="recipe-card-actions">
+                    <a class="btn btn-outline btn-xs {% if forloop.first %}disabled{% endif %}"
+                       href="{% url 'recipes:menu-recipe-move' object.pk mr.recipe.pk 'up' %}">↑</a>
+                    <a class="btn btn-outline btn-xs {% if forloop.last %}disabled{% endif %}"
+                       href="{% url 'recipes:menu-recipe-move' object.pk mr.recipe.pk 'down' %}">↓</a>
+                    <a class="btn btn-outline btn-xs"
+                       href="{% url 'recipes:menu-recipe-remove' object.pk mr.recipe.pk %}">×</a>
+                </div>
+            </div>
+            <p class="recipe-card-meta">
+                Uit: <a href="{{ mr.recipe.lesson.get_absolute_url }}">{{ mr.recipe.lesson }}</a>
+                · {{ mr.recipe.lesson.date|date }}
+            </p>
+        </div>
         {% endfor %}
-    </table>
-
-        {{ mr.recipe.instructions  }}
-       {% endfor %}
-
-
     </div>
-      <div role="tabpanel" class="tab-pane" id="shopping">
-          <table class="ingredients">
-              {%  for quant, ing in ingredients %}
-                  <tr>
-                  <td>{{ quant }}</td>
-                  <td>{{ ing }}</td>
+</div>
 
-                  </tr>
-              {% endfor %}
-          </table>
-      </div>
-  </div>
-
-
+<div class="tab-panel panel-instructies">
+    {% for mr in recipes %}
+        {% if not forloop.first %}
+        <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0">
+        {% endif %}
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;margin-bottom:0.75rem">{{ mr.recipe.title }}</h3>
+        <table class="ingredients-table" style="margin-bottom:0.75rem">
+            {% for row in mr.ingredient_rows %}
+            <tr>{% for ing in row %}<td>{{ ing }}</td>{% endfor %}</tr>
+            {% endfor %}
+        </table>
+        <p style="font-size:0.875rem;color:var(--ink-2);line-height:1.75;font-weight:300">{{ mr.recipe.instructions }}</p>
+    {% endfor %}
+</div>
 
 {% endblock %}

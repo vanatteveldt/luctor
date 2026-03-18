@@ -2,64 +2,72 @@
 {% load admin_urls %}
 {% load widget_tweaks %}
 
-{% block head %}
-<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tokenfield/0.12.0/css/bootstrap-tokenfield.css" />
-{% endblock %}
-
-{% block foot %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tokenfield/0.12.0/bootstrap-tokenfield.min.js"></script>
-<script type="text/javascript">
-  $(document).ready(function() {
-  $('#aanwezig').tokenfield({
-  autocomplete: {
-    source: {{aanwezig_autocomplete|safe}},
-    delay: 100
-  },
-  showAutocompleteOnFocus: true
-})
-  });
-</script>
-{% endblock %}
-
-
 {% block content %}
 
-<h1>{{ object.title }}</h1>
-<p>  Status: {{status_name}} |
-  Datum: {{ object.date }} | Oorspronkelijk bestand: <a href="{{ object.docfile.url }}">{{ object.docfile|cut:'./'  }}</a>
-
-  {% if user.is_superuser %}| <a href="{% url 'admin:recipes_lesson_change' object.id %}">Recept aanpassen</a> {% endif %}
-  {% if user.is_superuser and object.status == 3 %}| <a href="{% url 'recipes:lesson-detail' object.id %}?check=4">Goedkeuren</a> {% endif %}
-</p>
-{% if user.is_superuser %}
-<hr/>
-<form action="{% url 'recipes:lesson-aanwezig' object.id %}" method="POST">
-   {% csrf_token %}
-  <label for="{{ aanwezigform.aanwezig.id_for_label }}">Aanwezig:</label>
-
-  <div class="input-group">
-    {% render_field aanwezigform.aanwezig class="form-control" placeholder="Type hier namen en klik op aanpassen" id="aanwezig" %}
-      <span class="input-group-btn">
-        <input type="submit" class="btn btn-secondary" value="Aanpassen">
-      </span>
-  </div>
-  </form>
-<hr/>
-{% else %}
-Aanwezig: {{object.aanwezig}}
-{% endif %}
-      <div class="recipes">
-{% for recipe in recipes %}
-<h2><a href="{{recipe.get_absolute_url}}{% if highlight %}?highlight={{ highlight }}{% endif %}">{{ recipe.hl_title|default:recipe.title|safe }}</a></h2>
-  {% for picture in recipe.pictures.all %}
-<a href="{{picture.image.url}}">
-  <img class="foto-small" src="{% if picture.image_small %}{{ picture.image_small.url }}{% else %}#{% endif %}" />
+<a class="back-link" href="javascript:history.back()">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Terug
 </a>
-  {% endfor %}
-<p>{{ recipe.hl_ingredients|default:recipe.ingredients|safe }}<p>
-<p>{{ recipe.hl_instructions|default:recipe.instructions|safe }}<p>
-{% endfor %}
-      </div>
+
+<div class="lesson-header">
+    <div class="lesson-meta">
+        <span class="lesson-date">{{ object.date }}</span>
+        {% if user.is_superuser %}
+        <span class="lesson-date">{{ status_name }}</span>
+        <a class="btn btn-outline" href="{% url 'admin:recipes_lesson_change' object.id %}">Aanpassen</a>
+        {% if object.status == 3 %}
+        <a class="btn btn-outline" href="{% url 'recipes:lesson-detail' object.id %}?check=4">Goedkeuren</a>
+        {% endif %}
+        {% endif %}
     </div>
+
+    <h1 class="lesson-title">{{ object.title }}</h1>
+
+    <a class="source-link" href="{{ object.docfile.url }}">
+        <svg width="14" height="15" viewBox="0 0 10 12" fill="none">
+            <path d="M1 1h5l3 3v7H1V1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+            <path d="M6 1v3h3" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+        <span>
+            <span class="source-link-name">{{ object.docfile|cut:'./' }}</span>
+            <span class="source-link-sub">— origineel bestand</span>
+        </span>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3v8M4 7l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </a>
+
+    <div style="margin-top:0.75rem;display:flex;align-items:baseline;gap:0.75rem;flex-wrap:wrap">
+        <span style="font-size:0.82rem;color:var(--ink-3)">Aanwezig:
+            {% if object.aanwezig %}{{ object.aanwezig }}{% else %}<span style="color:var(--ink-4)">—</span>{% endif %}
+        </span>
+        {% if user.is_superuser %}
+        <details>
+            <summary class="btn btn-outline" style="list-style:none;cursor:pointer;font-size:0.75rem;padding:0.2rem 0.6rem">Wijzigen</summary>
+            <form action="{% url 'recipes:lesson-aanwezig' object.id %}" method="POST"
+                  style="display:flex;gap:0.5rem;align-items:center;margin-top:0.5rem">
+                {% csrf_token %}
+                {% render_field aanwezigform.aanwezig style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:0.35rem 0.65rem;font-family:inherit;font-size:0.82rem;outline:none;background:var(--bg);color:var(--ink-2);" placeholder="Namen" id="aanwezig" %}
+                <input type="submit" class="btn btn-primary" value="Opslaan">
+            </form>
+        </details>
+        {% endif %}
+    </div>
+</div>
+
+<div class="recipe-count">{{ recipes|length }} recept{% if recipes|length != 1 %}en{% endif %}</div>
+
+<div class="recipe-grid">
+    {% for recipe in recipes %}
+    <a class="recipe-card" href="{{ recipe.get_absolute_url }}{% if highlight %}?highlight={{ highlight }}{% endif %}">
+        <div class="recipe-card-title">{{ recipe.hl_title|default:recipe.title|safe }}</div>
+        {% if recipe.hl_instructions|default:recipe.instructions %}
+        <p class="recipe-card-snippet">{{ recipe.hl_instructions|default:recipe.instructions|safe|truncatechars:150 }}</p>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
 
 {% endblock %}
