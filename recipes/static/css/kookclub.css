@@ -869,6 +869,36 @@ a.recipe-card:hover .recipe-card-title,
 }
 .file-input-label:hover { border-color: var(--ink-3); color: var(--ink-2); }
 
+/* ── Login form fields ── */
+.full-card label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: 0.4rem;
+}
+.full-card input[type="text"],
+.full-card input[type="password"] {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  font-family: 'Figtree', sans-serif;
+  font-size: 0.875rem;
+  color: var(--ink);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.full-card input[type="text"]:focus,
+.full-card input[type="password"]:focus {
+  border-color: var(--green-2);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(45,87,64,0.08);
+}
+
 /* ── Search highlight ── */
 mark {
   background: #FEF08A;

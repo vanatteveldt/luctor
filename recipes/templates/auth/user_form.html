@@ -3,32 +3,36 @@
 
 {% block content %}
 
+<div style="max-width:480px;margin:0 auto">
 
-<form action="{% url 'recipes:user-details' object.id %}" method="post">
-  {% csrf_token %}
-  <div class="form-group">
-    <label for="form.username.id_for_label">Gebruikersnaam</label>
-    <input class="form-control" id="username" name="username" value="{{ view.request.user.username}}" disabled />
+    <h1 class="recipe-title" style="font-size:2rem;margin-bottom:2rem">Jouw gegevens</h1>
 
-    
-  </div>
-  <div class="form-group">
-    <label for="form.first_name.id_for_label">Voornaam</label>
-    {% render_field form.first_name placeholder="Voornaam" class="form-control" %}
-  </div>
-  <div class="form-group">
-    <label for="form.last_name.id_for_label">Achternaam</label>
-    {% render_field form.last_name placeholder="Achternaam" class="form-control" %}
-  </div>
-  <div class="form-group">
-    <label for="form.email.id_for_label">Email</label>
-    {% render_field form.email placeholder="Email" class="form-control" %}
-  </div>
+    <div class="full-card" style="margin-bottom:1rem">
+        <form action="{% url 'recipes:user-details' object.id %}" method="post">
+            {% csrf_token %}
+            <div style="margin-bottom:1rem">
+                <label>Gebruikersnaam</label>
+                <input type="text" value="{{ view.request.user.username }}" disabled
+                       style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:0.55rem 0.75rem;font-family:'Figtree',sans-serif;font-size:0.875rem;color:var(--ink-4);background:var(--bg);outline:none;">
+            </div>
+            <div style="margin-bottom:1rem">
+                <label>Voornaam</label>
+                {% render_field form.first_name placeholder="Voornaam" %}
+            </div>
+            <div style="margin-bottom:1rem">
+                <label>Achternaam</label>
+                {% render_field form.last_name placeholder="Achternaam" %}
+            </div>
+            <div style="margin-bottom:1.5rem">
+                <label>Email</label>
+                {% render_field form.email placeholder="Email" %}
+            </div>
+            <button type="submit" class="btn btn-primary">Gegevens opslaan</button>
+        </form>
+    </div>
 
+    <a class="btn btn-outline" href="{% url 'password_change' %}">Wachtwoord wijzigen</a>
 
+</div>
 
-  <button type="submit" class="btn btn-default">Gegevens Wijzigen</button>
-</form>
-
-<a class='btn btn-info' href="{% url 'password_change' %}">Wachtwoord wijzigen</a>
 {% endblock %}

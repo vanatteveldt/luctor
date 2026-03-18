@@ -102,8 +102,8 @@ img.foto-small {
 
     <nav class="nav">
       <a class="nav-brand" href="{% url 'recipes:search' %}">
-        <div class="nav-logo">K</div>
-        <span class="nav-name">De Kookclub</span>
+        <img src="{% static 'logo.png' %}" width="34" height="34" alt="">
+        <span class="nav-name">De Kookboot</span>
       </a>
 
       {% if user.is_authenticated %}

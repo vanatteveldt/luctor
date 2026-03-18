@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-LOGIN_REDIRECT_URL='/user/'
+LOGIN_REDIRECT_URL='/'
 
 # Paths to store database and uploaded files
 # for production, should move uploads somewhere suitable for serving
