@@ -3,3 +3,4 @@ markdown2
 django-widget_tweaks
 django-ipware
 Pillow
+gunicorn
