@@ -4,12 +4,10 @@
   <head>
     <link rel="shortcut icon" href="{% static 'favicon.ico' %}"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css"
-	  rel="stylesheet">
-    <link href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" type="text/css" rel="stylesheet">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js" ></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/kookclub.css' %}">
     {% block head %}{% endblock %}
     <style>
 
@@ -102,73 +100,54 @@ img.foto-small {
 
   <body>
 
-    <nav class="navbar navbar-default" role="navigation">
-      <div class="container-fluid">
-	<!-- Brand and toggle get grouped for better mobile display -->
-	<div class="navbar-header">
-	  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-	  </button>
-	  {% if user.is_authenticated %}
-	  <a class="navbar-brand" href="/">Home</a>
-	  {% endif %}
-	</div>
-	
-	<!-- Collect the nav links, forms, and other content for toggling -->
-	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-	  <ul class="nav navbar-nav navbar-left">
-    {%  if user.is_authenticated %}
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Recepten <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="{% url 'recipes:fav-recipe-list' %}">Favorieten</a></li>
-            <li><a href="{% url 'recipes:recent-recipe-list' %}">Laatst bekeken</a></li>
-            <li><a href="{% url 'recipes:recipe-list' %}">Jouw recepten</a></li>
-            <li><a href="{% url 'recipes:lesson-list' %}">Jouw Kooklessen</a></li>
-              {%  if user.is_superuser %}
-                              <li role="separator" class="divider"></li>
-            <li><a href="{% url 'recipes:all-recipe-list' %}">Alle recepten</a></li>
-            <li><a href="{% url 'recipes:all-lesson-list' %}">Alle Kooklessen</a></li>
-                  {% endif %}
-          </ul>
-        </li>
-    {%  endif %}
-	    {% if user.is_superuser %}<li><a href="{% url 'recipes:upload' %}">Nieuwe les uploaden</a></li> {% endif %}
-	  </ul>
-	  
-	  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
-	    
-	    <ul class="nav navbar-nav navbar-right">
-	      {% if user.is_authenticated %}
-	      <li class="ingelogd">
-		<a href="{% url 'recipes:user-details' user.id %}">
-		  {% if not user.last_name %}
-		  {{user.username}}
-		  {% else %}{{user.first_name}} {{user.last_name}}
-		  {% endif %}
-		</a>
-	      </li>
-	      {% endif %}
-	      {% if user.is_superuser %}<li><a href="{% url 'admin:index' %}">Sitebeheer</a></li> {% endif %}
-	      {% if user.is_authenticated %}
-	      <li><a href="{% url 'logout' %}?next=/">Uitloggen</a></li>
-	      {% else %}
-	      <li><a href="{% url 'login' %}?next=/">Inloggen</a></li>
-	      {% endif %}
-	      
-	      
-	    </ul>
-	    
-	  </div><!-- /.navbar-collapse -->
-	</div><!-- /.container-fluid -->
+    <nav class="nav">
+      <a class="nav-brand" href="{% url 'recipes:search' %}">
+        <div class="nav-logo">K</div>
+        <span class="nav-name">De Kookclub</span>
+      </a>
+
+      {% if user.is_authenticated %}
+      <form class="nav-search" action="{% url 'recipes:search' %}" method="get">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="5.25" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Zoek recepten, menu's, kooklessen…">
+      </form>
+
+      <div class="nav-right">
+        <a class="nav-user" href="{% url 'recipes:user-details' user.id %}">
+          <div class="nav-avatar">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}{% if not user.first_name %}{{ user.username|slice:":2"|upper }}{% endif %}</div>
+          <span class="nav-username">{% if user.last_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</span>
+        </a>
+        <a class="nav-icon-btn" href="{% url 'logout' %}?next=/" title="Uitloggen">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M10.5 11l3-3-3-3M13.5 8H6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        {% if user.is_superuser %}
+        <a class="nav-icon-btn" href="{% url 'admin:index' %}" title="Sitebeheer">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.22 3.22l1.42 1.42M11.36 11.36l1.42 1.42M12.78 3.22l-1.42 1.42M4.64 11.36l-1.42 1.42" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </a>
+        {% endif %}
       </div>
+      {% else %}
+      <div class="nav-right">
+        <a class="nav-icon-btn" href="{% url 'login' %}?next=/" title="Inloggen">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 2h3a1 1 0 011 1v10a1 1 0 01-1 1h-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M5.5 11l-3-3 3-3M2.5 8H10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      {% endif %}
     </nav>
 
-
-    <div id="content" class="container">
+    <div id="content" class="page">
       {% block content %}{% endblock %}
     </div>
   </body>

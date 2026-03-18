@@ -1,0 +1,519 @@
+/*
+ * kookclub.css
+ * Main stylesheet for De Kookclub
+ *
+ * Fonts loaded via Google Fonts - add to base template:
+ *   <link rel="preconnect" href="https://fonts.googleapis.com">
+ *   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ *   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet">
+ *
+ * Usage:
+ *   {% load static %}
+ *   <link rel="stylesheet" href="{% static 'css/kookclub.css' %}">
+ *
+ * Classes overview:
+ *   Layout:   .nav, .page, .cols, .col
+ *   Sections: .section-head, .section-title, .section-all
+ *   Cards:    .card-stack, .card, .recipe-row, .menu-row, .les-row
+ *   Recipe:   .recipe-top, .recipe-name, .star-btn, .doc-ref, .doc-tag, .snippet, .ts
+ *   Menu:     .menu-add-row, .menu-add-input, .btn-add, .menu-head, .menu-owner, .menu-date, .menu-recipes
+ *   Lessons:  .les-head, .les-title, .les-recipes, .badge
+ *   Nav:      .nav-brand, .nav-logo, .nav-name, .nav-search, .nav-right,
+ *             .nav-icon-btn, .notif-dot, .nav-user, .nav-avatar, .nav-username
+ */
+
+:root {
+  --bg:        #F0EEE9;
+  --card:      #FFFFFF;
+  --ink:       #1C1917;
+  --ink-2:     #44403C;
+  --ink-3:     #78716C;
+  --ink-4:     #A8A29E;
+  --border:    #E7E4DF;
+  --green:     #1C3829;
+  --green-2:   #2D5740;
+  --green-bg:  #F0F5F2;
+  --accent:    #B91C1C;
+  --accent-bg: #FEE2E2;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { background: var(--bg); }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Navbar ── */
+.nav {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  height: 58px;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  gap: 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.nav-logo {
+  width: 34px; height: 34px;
+  background: var(--ink);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.nav-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.nav-search {
+  flex: 1;
+  max-width: 520px;
+  margin: 0 auto;
+  position: relative;
+}
+.nav-search svg {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-4);
+  pointer-events: none;
+}
+.nav-search input {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 1rem 0.55rem 2.5rem;
+  font-family: 'Figtree', sans-serif;
+  font-size: 0.875rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.nav-search input:focus {
+  border-color: var(--green-2);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(45,87,64,0.08);
+}
+.nav-search input::placeholder { color: var(--ink-4); }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.nav-icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--ink-2);
+  position: relative;
+  transition: background 0.12s, border-color 0.12s;
+}
+.nav-icon-btn:hover { background: var(--bg); border-color: var(--ink-4); }
+.notif-dot {
+  position: absolute;
+  top: 5px; right: 5px;
+  width: 7px; height: 7px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 1.5px solid white;
+}
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  padding: 0.22rem 0.65rem 0.22rem 0.3rem;
+  border-radius: 24px;
+  border: 1.5px solid var(--border);
+  background: white;
+  transition: background 0.12s, border-color 0.12s;
+}
+.nav-user:hover { background: var(--bg); border-color: var(--ink-4); }
+.nav-avatar {
+  width: 28px; height: 28px;
+  background: var(--ink);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.8);
+  letter-spacing: 0.02em;
+}
+.nav-username {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+/* ── Page ── */
+.page {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 5rem;
+}
+
+/* ── Columns ── */
+.cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.col {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fadeup 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.col:nth-child(1) { animation-delay: 0.08s; }
+.col:nth-child(2) { animation-delay: 0.16s; }
+.col:nth-child(3) { animation-delay: 0.24s; }
+@keyframes fadeup { to { opacity: 1; transform: translateY(0); } }
+
+/* ── Section head ── */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.section-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.section-all {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  white-space: nowrap;
+  transition: color 0.12s;
+}
+.section-all:hover { color: var(--ink); }
+
+/* ── Card stack ── */
+.card-stack { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  border-color: #D6D2CC;
+}
+
+/* ── Recipe card ── */
+.recipe-row { padding: 1.35rem 1.5rem; }
+
+.recipe-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.recipe-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: color 0.12s;
+  color: var(--ink);
+  text-decoration: none;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  transition: color 0.12s;
+}
+.card:hover .recipe-name,
+.card:hover .menu-owner,
+.card:hover .les-title { color: lab(46.7923 35.3122 29.9336); }
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+  color: var(--ink-4);
+  transition: color 0.12s, transform 0.1s;
+}
+.star-btn:hover { color: #D97706; transform: scale(1.2); }
+.star-btn.filled { color: #D97706; }
+
+.doc-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--ink-4);
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-decoration: none;
+  margin-bottom: 0.35rem;
+  transition: color 0.12s;
+}
+.doc-ref:hover { color: var(--ink-2); }
+/* lesson tag above recipe name in col 1 */
+.doc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.18rem 0.5rem 0.18rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  text-decoration: none;
+  margin-bottom: 0.4rem;
+  transition: border-color 0.12s, color 0.12s;
+}
+.doc-tag:hover { border-color: var(--ink-3); color: var(--ink-2); }
+.doc-tag svg { opacity: 0.5; flex-shrink: 0; }
+
+.doc-ref svg { opacity: 0.6; }
+
+.snippet {
+  font-size: 0.8rem;
+  color: var(--ink-3);
+  font-weight: 300;
+  line-height: 1.55;
+  font-style: italic;
+}
+.with-thumb {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+}
+.thumb {
+  width: 44px; height: 44px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.ts {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--ink-4);
+  margin-top: 0.4rem;
+  font-weight: 300;
+}
+
+/* ── Menu card ── */
+.menu-add-row {
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  gap: 0.4rem;
+}
+.menu-add-input {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+  font-family: 'Figtree', sans-serif;
+  font-size: 0.82rem;
+  color: var(--ink);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.menu-add-input:focus { border-color: var(--green-2); background: white; }
+.menu-add-input::placeholder { color: var(--ink-4); }
+.btn-add {
+  width: 32px; height: 32px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink-3);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-add:hover { border-color: var(--green-2); color: var(--green); }
+
+.menu-row { padding: 1.35rem 1.5rem; }
+
+.menu-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+.menu-owner {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  transition: color 0.12s;
+  text-decoration: none;
+}
+.menu-date {
+  font-size: 0.72rem;
+  color: var(--ink-4);
+  font-weight: 300;
+  white-space: nowrap;
+}
+.menu-recipes {
+  font-size: 0.8rem;
+  color: var(--ink-3);
+  font-weight: 300;
+  line-height: 1.85;
+}
+.menu-recipes a {
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: color 0.12s;
+}
+.menu-recipes a:hover { color: var(--green); text-decoration: underline; }
+
+/* ── Les card ── */
+.les-row { padding: 1.35rem 1.5rem; }
+
+.les-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+.les-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  transition: color 0.12s;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.5rem;
+  border-radius: 5px;
+  margin-top: 1px;
+}
+
+.les-recipes {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--ink-3);
+  font-weight: 300;
+  line-height: 1.85;
+}
+.les-recipes a {
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: color 0.12s;
+}
+.les-recipes a:hover { color: var(--green); text-decoration: underline; }
+
+/* ── Search results layout ── */
+.search-cols {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .search-cols { grid-template-columns: 1fr; }
+}
+
+/* ── Pagination ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  list-style: none;
+  padding: 1.5rem 0;
+}
+.pagination a,
+.pagination span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.5rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+.pagination a:hover { border-color: var(--ink-4); background: var(--bg); }
+.pagination .active a,
+.pagination .active span {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: white;
+}
+.pagination .disabled a,
+.pagination .disabled span {
+  color: var(--ink-4);
+  pointer-events: none;
+  background: var(--bg);
+}

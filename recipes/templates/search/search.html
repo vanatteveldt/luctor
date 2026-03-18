@@ -1,214 +1,150 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2>Recepten zoeken</h2>
 
-    <form method="get" action="#">
-        <table>
-            {{ searchform.q }}
-            <tr>
-                <td>&nbsp;</td>
-                <td>
-                    <input type="submit" value="Zoek">
-                </td>
-            </tr>
-        </table>
-    </form>
+{% if query %}
 
-    {% if query %}
-        <h3>{{ page_obj.n }} Resultaten</h3>
-        {% include "recipes/pagination_search.html" %}
+    {% include "recipes/pagination_search.html" %}
 
-        <div class="row">
+    <div class="search-cols">
+
         {% if matching_lessons %}
-        <div class="col-md-3">
-            <h4>Kooklessen</h4>
-            <ul class="results">
+        <div>
+            <div class="section-head">
+                <h2 class="section-title">Kooklessen</h2>
+            </div>
+            <div class="card-stack">
                 {% for lesson in matching_lessons %}
-                <li>
-                    <a class="lesson" href="{{ lesson.get_absolute_url }}?highlight={{ query }}">{{ lesson.hl_title|safe }}</a>
-                    <span class="sub-text">{{ lesson.date|date }}</span>
-                </li>
+                <div class="card">
+                    <div class="les-row">
+                        <div class="les-head">
+                            <a class="les-title" href="{{ lesson.get_absolute_url }}?highlight={{ query }}">{{ lesson.hl_title|safe }}</a>
+                        </div>
+                        <span class="ts">{{ lesson.date|date }}</span>
+                    </div>
+                </div>
                 {% endfor %}
-            </ul>
+            </div>
         </div>
         {% endif %}
 
-        <div class="{% if matching_lessons %}col-md-9{% else %}col-md-12{% endif %}">
-        <h4>Recepten</h4>
-        <ul class='results'>
-            {% for result in object_list %}
-                <li>
-                    {% include "recipes/thumbnail.html" with object=result %}
-                    <a href="{{ result.get_absolute_url }}?highlight={{ query }}">{{ result.hl_title|safe }}</a>
-                    (<a href="{{ result.lesson.docfile.url }}"><span class="glyphicon glyphicon-file"
-                                                                     aria-hidden="true" title="Download"></span></a>
-                    <a href="{{ result.lesson.get_absolute_url }}?highlight={{ query }}">{{ result.lesson.title }}</a>)<br/>
-                    {{ result.description|safe }}
-                    <hr/>
-                </li>
-            {% empty %}
-                <p>No results found.</p>
-            {% endfor %}
-        </ul>
+        <div>
+            <div class="section-head">
+                <h2 class="section-title">Recepten</h2>
+                <span class="section-all">{{ page_obj.n }} resultaten</span>
+            </div>
+            <div class="card-stack">
+                {% for result in object_list %}
+                <div class="card">
+                    <div class="recipe-row">
+                        <a class="doc-tag" href="{{ result.lesson.get_absolute_url }}?highlight={{ query }}">
+                            <svg width="9" height="10" viewBox="0 0 10 12" fill="none"><path d="M1 1h5l3 3v7H1V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 1v3h3" stroke="currentColor" stroke-width="1.2"/></svg>
+                            {{ result.lesson.title }}
+                        </a>
+                        <div class="recipe-top">
+                            <a class="recipe-name" href="{{ result.get_absolute_url }}?highlight={{ query }}">{{ result.hl_title|safe }}</a>
+                        </div>
+                        <p class="snippet">{{ result.description|safe }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p>Geen resultaten gevonden.</p>
+                {% endfor %}
+            </div>
         </div>
+
+    </div><!-- /search-cols -->
+
+    {% include "recipes/pagination_search.html" %}
+
+{% else %}
+
+    <div class="cols">
+
+        <!-- Col 1: Recent bekeken -->
+        <div class="col">
+            <div class="section-head">
+                <h2 class="section-title">Recent bekeken</h2>
+                <a class="section-all" href="{% url 'recipes:recent-recipe-list' %}">Alle recepten ›</a>
+            </div>
+            <div class="card-stack">
+                {% for object in your_recent %}
+                <div class="card">
+                    <div class="recipe-row">
+                        <a class="doc-tag" href="{{ object.recipe.lesson.get_absolute_url }}">
+                            <svg width="9" height="10" viewBox="0 0 10 12" fill="none"><path d="M1 1h5l3 3v7H1V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 1v3h3" stroke="currentColor" stroke-width="1.2"/></svg>
+                            {{ object.recipe.lesson.title }}
+                        </a>
+                        <div class="recipe-top">
+                            <a class="recipe-name" href="{{ object.recipe.get_absolute_url }}">{{ object.recipe.title }}</a>
+                        </div>
+                        <p class="snippet">{{ object.recipe.instructions|truncatechars:150 }}</p>
+                        <span class="ts">{{ object.date }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
 
-        {% include "recipes/pagination_search.html" %}
-    {% else %}
-        <!-- no results, show favourites and new lessons -->
-
-
-        <div class="row">
-            <div class="col-md-3">
-
-                <h3><a href="{% url 'recipes:fav-recipe-list' %}">Favorieten</a></h3>
-                <ul class='results'>
-                    {% for object in your_likes %}
-                        <li>
-                            <p>
-
-                                <a href="{{ object.get_absolute_url }}?toggle_like={{ object.pk }}">
-                                    <span class="glyphicon glyphicon-star{% if not object.favorite %}-empty{% endif %}"
-                                          aria-hidden="true"></span>
-                                </a>
-                                <a class="recipe"
-                                   href="{{ object.recipe.get_absolute_url }}">{{ object.recipe.title }}</a>
-                                <br/>
-                                <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span
-                                        class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
-                                </a>
-                                <a class="lesson"
-                                   href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
-                                <br/>
-                                {% include "recipes/thumbnail.html" with object=object.recipe %}
-                                {{ object.recipe.instructions|truncatechars:150 }}
-                                <span class="sub-text">{{ object.date }}</span>
-
-                            </p>
-
-                        </li>
-                    {% endfor %}
-                </ul>
-
+        <!-- Col 2: Jouw Menu's -->
+        <div class="col">
+            <div class="section-head">
+                <h2 class="section-title">Jouw Menu's</h2>
+                <a class="section-all" href="{% url 'recipes:menu-list' %}">Alle menu's ›</a>
             </div>
-            <div class="col-md-3">
-
-                <h3><a href="{% url 'recipes:recent-recipe-list' %}">Recent bekeken</a></h3>
-                <ul class='results'>
-                    {% for object in your_recent %}
-                        <li>
-                            <p>
-
-                                <a href="{{ object.get_absolute_url }}?toggle_like={{ object.pk }}">
-                                    <span class="glyphicon glyphicon-star{% if not object.favorite %}-empty{% endif %}"
-                                          aria-hidden="true"></span>
-                                </a>
-                                <a class="recipe"
-                                   href="{{ object.recipe.get_absolute_url }}">{{ object.recipe.title }}</a>
-                                <br/>
-                                <a class="lesson" href="{{ object.recipe.lesson.docfile.url }}"><span
-                                        class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
-                                </a>
-                                <a class="lesson"
-                                   href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>
-                                <br/>
-
-                                {% include "recipes/thumbnail.html" with object=object.recipe %}
-                                {{ object.recipe.instructions|truncatechars:150 }}
-                                <span class="sub-text">{{ object.date }}</span>
-
-                            </p>
-
-                        </li>
-                    {% endfor %}
-                </ul>
-
-            </div>
-            <div class="col-md-3">
-
-
-                <h3><a href="{% url 'recipes:menu-list' %}">Jouw Menu's</a></h3>
-                <form class="form-inline" action="{% url 'recipes:menu-add' %}" method="POST">
-                    {% csrf_token %}
-
-                    <div class="form-group">
-                        <input class="form-control" name="name" placeholder="Menu Toevoegen"></div>
-                    <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-plus"
-                                                                        aria-hidden="true" title="Toevoegen"></span>
-                    </button>
-                </form>
-
-                <ul class='results'>
-                    {% for object in menus %}
-                        <li>
-                            <a class="lesson" href="{{ object.get_absolute_url }}">{{ object.name }}</a>
-                            <span class="sub-text">{{ object.date | date }}</span><br/>
+            <div class="card-stack">
+                <div class="card">
+                    <form class="menu-add-row" action="{% url 'recipes:menu-add' %}" method="POST">
+                        {% csrf_token %}
+                        <input class="menu-add-input" name="name" placeholder="Nieuw menu toevoegen…">
+                        <button class="btn-add" type="submit">＋</button>
+                    </form>
+                </div>
+                {% for object in menus %}
+                <div class="card">
+                    <div class="menu-row">
+                        <div class="menu-head">
+                            <a class="menu-owner" href="{{ object.get_absolute_url }}">{{ object.name }}</a>
+                            <span class="menu-date">{{ object.date|date }}</span>
+                        </div>
+                        <div class="menu-recipes">
                             {% for recipe in object.recipes.all %}
-                                <a class="recipe" href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>
-                                {% if not forloop.last %}, {% endif %} {% endfor %}
-                        </li>
-
-                    {% endfor %}
-                </ul>
-
-
+                                <a href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>{% if not forloop.last %} · {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
+        </div>
 
-
-            <div class="col-md-3">
-
-
-                <h3><a href="{% url 'recipes:lesson-list' %}">Nieuwe kooklessen</a></h3>
-                <ul class='results'>
-                    {% for object in recent_lessons %}
-                        <li>
-                            {% if object.has_picture %}
-                                {% for recipe in object.recipes.all %}
-                                    {% include "recipes/thumbnail.html" with object=recipe cls="thumb2" %}
-                                {% endfor %}
-                                <br/>
-                            {% endif %}
-                            <a class="lesson" href="{{ object.docfile.url }}">
-                                <span class="glyphicon glyphicon-file" aria-hidden="true" title="Download"></span>
-                            </a>
-                            <a class="lesson"
-                               href="{{ object.get_absolute_url }}">{{ object.title }}</a>
-                            <span class="sub-text">{{ object.date | date }}</span>
-                            <br/>
+        <!-- Col 3: Nieuwe kooklessen -->
+        <div class="col">
+            <div class="section-head">
+                <h2 class="section-title">Nieuwe kooklessen</h2>
+                <a class="section-all" href="{% url 'recipes:lesson-list' %}">Alle lessen ›</a>
+            </div>
+            <div class="card-stack">
+                {% for object in recent_lessons %}
+                <div class="card">
+                    <div class="les-row">
+                        <div class="les-head">
+                            <a class="les-title" href="{{ object.get_absolute_url }}">{{ object.title }}</a>
+                        </div>
+                        <span class="ts">{{ object.date|date }}</span>
+                        <div class="les-recipes">
                             {% for recipe in object.recipes.all %}
-                                <a class="recipe" href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>
-                                {% if not forloop.last %}, {% endif %} {% endfor %}
-                        </li>
-                    {% endfor %}
-                </ul>
-
-
+                                <a href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>{% if not forloop.last %} · {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-            <!--
-  <div class="col-md-4">
+        </div>
 
-		<h3>Recente likes</h3>
-		<ul class='results comments'>
-		{% for object in other_likes %}
-                <li>
+    </div><!-- /cols -->
 
-<div>
-<p><a href="{{ object.recipe.get_absolute_url }}?highlight={{query}}">{{ object.recipe.title }}</a>
-(<a href="{{ object.recipe.lesson.get_absolute_url }}">{{ object.recipe.lesson.title }}</a>, 
-<a href="{{ object.recipe.lesson.docfile.url }}">{{ object.recipe.lesson.docfile.name|cut:'./'  }}</a>)<br/>
-{{ object.recipe.full_text|truncatechars:250 }} 
-</p>
-<span class="sub-text">door {{object.user}} op {{object.date}}</span>
-</div>
-</li>
-            {% endfor %}
-		</ul>
-    </div>-->
+{% endif %}
 
-        </div> <!-- end row -->
-
-
-
-    {% endif %}
 {% endblock %}
