@@ -1,29 +1,31 @@
 {% extends "base.html" %}
-{% load admin_urls %}
-{% load widget_tweaks %}
 
 {% block content %}
 
-<h1>Jouw menu's</h1><ul class='results'>
+<div class="section-head">
+    <h2 class="section-title">Jouw menu's</h2>
+</div>
 
 {% include "recipes/pagination.html" %}
 
-        {% for object in object_list %}
-    <li>
+<div class="card-stack">
+    {% for object in object_list %}
+    <div class="card">
+        <div class="menu-row">
+            <div class="menu-head">
+                <a class="menu-owner" href="{{ object.get_absolute_url }}">{{ object.name }}</a>
+                <span class="menu-date">{{ object.date|date }}</span>
+            </div>
+            <div class="menu-recipes">
+                {% for recipe in object.recipes.all %}
+                    <a href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>{% if not forloop.last %} · {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
-
-                    
-                    <a class="lesson"
-                       href="{{ object.get_absolute_url }}">{{ object.name }}</a>
-                    <span class="sub-text">{{ object.date | date }}</span>
-                    <br/>
-                    {% for recipe in object.recipes.all %}
-                        <a class="recipe" href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a>
-                        {% if not forloop.last %}, {% endif %} {% endfor %}
-                </li>
-
-                </li>
-    {%  endfor %}
-</ul>
 {% include "recipes/pagination.html" %}
+
 {% endblock %}

@@ -1,25 +1,30 @@
 {% extends "base.html" %}
-{% load admin_urls %}
-{% load widget_tweaks %}
 
 {% block content %}
 
-<h1>{{ name }}</h1><ul class='results'>
+<div class="section-head">
+    <h2 class="section-title">{{ name }}</h2>
+</div>
 
 {% include "recipes/pagination.html" %}
 
-        {% for recipe in recipes %}
-    <li>
-                    {% include "recipes/thumbnail.html" with object=recipe placeholder=True %}
-                    <a href="{{ recipe.get_absolute_url }}?highlight={{ query }}">{{ recipe.title  }}</a>
-                    (<a href="{{ recipe.lesson.docfile.url }}"><span class="glyphicon glyphicon-file"
-                                                                            aria-hidden="true" title="Download"></span>
-                </a>
-                    <a href="{{ recipe.lesson.get_absolute_url }}">{{ recipe.lesson.title  }}</a>)<span class="sub-text"> {{ recipe.lesson.date | date }}</span><br/>
+<div class="card-stack">
+    {% for recipe in recipes %}
+    <div class="card">
+        <div class="recipe-row">
+            <a class="doc-tag" href="{{ recipe.lesson.get_absolute_url }}">
+                <svg width="9" height="10" viewBox="0 0 10 12" fill="none"><path d="M1 1h5l3 3v7H1V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 1v3h3" stroke="currentColor" stroke-width="1.2"/></svg>
+                {{ recipe.lesson.title }} · {{ recipe.lesson.date|date }}
+            </a>
+            <div class="recipe-top">
+                <a class="recipe-name" href="{{ recipe.get_absolute_url }}?highlight={{ query }}">{{ recipe.title }}</a>
+            </div>
+            <p class="snippet">{{ recipe.instructions|truncatechars:150 }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
-                    {{ recipe.instructions|truncatechars:250 }}                    <hr/>
-                </li>
-    {%  endfor %}
-</ul>
 {% include "recipes/pagination.html" %}
+
 {% endblock %}
