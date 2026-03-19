@@ -2,7 +2,11 @@
 
 <html>
   <head>
-    <link rel="shortcut icon" href="{% static 'favicon.ico' %}"/>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_16.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_32.png' %}">
+    <link rel="icon" type="image/png" sizes="48x48" href="{% static 'favicon_48.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_180.png' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +18,7 @@
 ul.results {list-style:none; padding-left: 10px}
 ul.results li {margin-bottom: 1em}
 .highlighted {background-color: yellow}
-.raw { white-space: pre-wrap; 
+.raw { white-space: pre-wrap;
      padding: 1em; background-color: #ddd;
     font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;}
 .parsed {padding: 1em;}
@@ -85,12 +89,12 @@ em {font-weight: bold}
     font-size:11px;
 }
 img.foto {
-    max-width: 300px; 
+    max-width: 300px;
     max-height: 200px;
 border-radius: 10px;
 }
 img.foto-small {
-    max-width: 100px; 
+    max-width: 100px;
     max-height: 100px;
     border-radius: 10px;
 }
