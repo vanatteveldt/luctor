@@ -308,7 +308,7 @@ body {
   font-weight: 500;
   color: var(--ink-3);
   text-decoration: none;
-  margin-bottom: 0.4rem;
+  margin-top: 0.3rem;
   transition: border-color 0.12s, color 0.12s;
 }
 .doc-tag:hover { border-color: var(--ink-3); color: var(--ink-2); }
@@ -336,12 +336,14 @@ body {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 1rem;
+  overflow: hidden;
 }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ts {
   display: block;
   font-size: 0.7rem;
   color: var(--ink-4);
-  margin-top: 0.4rem;
+  margin-top: 0.15rem;
   font-weight: 300;
 }
 

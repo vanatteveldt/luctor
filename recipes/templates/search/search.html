@@ -35,18 +35,7 @@
             </div>
             <div class="card-stack">
                 {% for result in object_list %}
-                <div class="card">
-                    <div class="recipe-row">
-                        <a class="doc-tag" href="{{ result.lesson.get_absolute_url }}?highlight={{ query }}">
-                            <svg width="9" height="10" viewBox="0 0 10 12" fill="none"><path d="M1 1h5l3 3v7H1V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 1v3h3" stroke="currentColor" stroke-width="1.2"/></svg>
-                            {{ result.lesson.title }}
-                        </a>
-                        <div class="recipe-top">
-                            <a class="recipe-name" href="{{ result.get_absolute_url }}?highlight={{ query }}">{{ result.hl_title|safe }}</a>
-                        </div>
-                        <p class="snippet">{{ result.description|safe }}</p>
-                    </div>
-                </div>
+                {% include "recipes/recipe_card.html" with recipe=result name=result.hl_title snippet=result.description highlight=query date=result.lesson.date %}
                 {% empty %}
                 <p>Geen resultaten gevonden.</p>
                 {% endfor %}
@@ -69,19 +58,9 @@
             </div>
             <div class="card-stack">
                 {% for object in your_recent %}
-                <div class="card">
-                    <div class="recipe-row">
-                        <a class="doc-tag" href="{{ object.recipe.lesson.get_absolute_url }}">
-                            <svg width="9" height="10" viewBox="0 0 10 12" fill="none"><path d="M1 1h5l3 3v7H1V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 1v3h3" stroke="currentColor" stroke-width="1.2"/></svg>
-                            {{ object.recipe.lesson.title }}
-                        </a>
-                        <div class="recipe-top">
-                            <a class="recipe-name" href="{{ object.recipe.get_absolute_url }}">{{ object.recipe.title }}</a>
-                        </div>
-                        <p class="snippet">{{ object.recipe.instructions|truncatechars:150 }}</p>
-                        <span class="ts">{{ object.date }}</span>
-                    </div>
-                </div>
+                {% with snippet=object.recipe.instructions|truncatechars:150 %}
+                {% include "recipes/recipe_card.html" with recipe=object.recipe name=object.recipe.title date=object.date %}
+                {% endwith %}
                 {% endfor %}
             </div>
         </div>

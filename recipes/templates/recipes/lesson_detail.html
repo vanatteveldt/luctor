@@ -59,14 +59,11 @@
 
 <div class="recipe-count">{{ recipes|length }} recept{% if recipes|length != 1 %}en{% endif %}</div>
 
-<div class="recipe-grid">
+<div class="card-stack">
     {% for recipe in recipes %}
-    <a class="recipe-card" href="{{ recipe.get_absolute_url }}{% if highlight %}?highlight={{ highlight }}{% endif %}">
-        <div class="recipe-card-title">{{ recipe.hl_title|default:recipe.title|safe }}</div>
-        {% if recipe.hl_instructions|default:recipe.instructions %}
-        <p class="recipe-card-snippet">{{ recipe.hl_instructions|default:recipe.instructions|safe|truncatechars:150 }}</p>
-        {% endif %}
-    </a>
+    {% with name=recipe.hl_title|default:recipe.title snippet=recipe.hl_instructions|default:recipe.instructions %}
+    {% include "recipes/recipe_card.html" with snippet=snippet|truncatechars:150 highlight=highlight hide_lesson=True %}
+    {% endwith %}
     {% endfor %}
 </div>
 
