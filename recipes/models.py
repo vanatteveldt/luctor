@@ -19,7 +19,7 @@ _PARSE_HELP = ("Pas hier de opdeling van de kookles in recepten aan. "
 
 class Lesson(models.Model):
     filename = models.CharField(max_length=200)
-    docfile = models.FileField()
+    docfile = models.FileField(upload_to='lessons')
     raw_text = models.TextField(null=True)
     parsed = models.TextField(null=True, help_text=_PARSE_HELP) 
     status = models.IntegerField(default=0)
@@ -70,9 +70,9 @@ class Recipe(models.Model):
 
 class Picture(models.Model):
     recipe = models.ForeignKey(Recipe, related_name="pictures", on_delete=models.CASCADE)
-    image = models.ImageField()
-    image_small = models.ImageField(null=True)
-    image_thumb = models.ImageField(null=True)
+    image = models.ImageField(upload_to='images')
+    image_small = models.ImageField(null=True, upload_to='images')
+    image_thumb = models.ImageField(null=True, upload_to='images')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="pictures", on_delete=models.CASCADE)
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
     favourite = models.BooleanField(default=False)
@@ -85,7 +85,7 @@ class Comment(models.Model):
     recipe = models.ForeignKey(Recipe, related_name="comments", on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="comments", on_delete=models.CASCADE)
     date = models.DateTimeField(db_column='insertdate', auto_now_add=True)
-    image = models.ImageField(null=True, blank=True)
+    image = models.ImageField(null=True, blank=True, upload_to='images')
     text = models.TextField(null=True, blank=True)
 
     class Meta:
