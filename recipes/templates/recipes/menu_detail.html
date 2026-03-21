@@ -71,18 +71,19 @@
 </div>
 
 <div class="tab-panel panel-instructies">
+    <div class="card-stack">
     {% for mr in recipes %}
-        {% if not forloop.first %}
-        <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0">
-        {% endif %}
-        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;margin-bottom:0.75rem">{{ mr.recipe.title }}</h3>
-        <table class="ingredients-table" style="margin-bottom:0.75rem">
-            {% for row in mr.ingredient_rows %}
-            <tr>{% for ing in row %}<td>{{ ing }}</td>{% endfor %}</tr>
-            {% endfor %}
-        </table>
-        <p style="font-size:0.875rem;color:var(--ink-2);line-height:1.75;font-weight:300">{{ mr.recipe.instructions }}</p>
+        <div class="card" style="padding:1.35rem 1.5rem">
+            <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;margin-bottom:0.75rem">{{ mr.recipe.title }}</h3>
+            <table class="ingredients-table" style="margin-bottom:0.75rem">
+                {% for row in mr.ingredient_rows %}
+                <tr>{% for ing in row %}<td>{{ ing }}</td>{% endfor %}</tr>
+                {% endfor %}
+            </table>
+            <p style="font-size:0.875rem;color:var(--ink-2);line-height:1.75;font-weight:300">{{ mr.recipe.instructions }}</p>
+        </div>
     {% endfor %}
+    </div>
 </div>
 
 {% endblock %}
